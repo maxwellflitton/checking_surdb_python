@@ -121,6 +121,7 @@ class WsCborDescriptor:
 
     def prep_signin(self, obj) -> bytes:
         if obj.kwargs.get("namespace") is None:
+            # root user signing in
             data = {
                 "id": obj.id,
                 "method": obj.method.value,
