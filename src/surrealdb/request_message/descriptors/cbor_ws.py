@@ -126,7 +126,7 @@ class WsCborDescriptor:
                 "method": obj.method.value,
                 "params": [
                     {
-                        "user": obj.kwargs.get("user"),
+                        "user": obj.kwargs.get("username"),
                         "pass": obj.kwargs.get("password")
                     }
                 ]

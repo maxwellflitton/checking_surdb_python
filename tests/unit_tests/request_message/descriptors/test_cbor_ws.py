@@ -54,8 +54,21 @@ class TestWsCborAdapter(TestCase):
         message = RequestMessage(
             1,
             RequestMethod.SIGN_IN,
-            user="user",
+            username="user",
             password="pass"
+        )
+        outcome = message.WS_CBOR_DESCRIPTOR
+        self.assertIsInstance(outcome, bytes)
+
+    def test_signin_pass_root_with_none(self):
+        message = RequestMessage(
+            1,
+            RequestMethod.SIGN_IN,
+            username="username",
+            password="pass",
+            account=None,
+            database=None,
+            namespace=None
         )
         outcome = message.WS_CBOR_DESCRIPTOR
         self.assertIsInstance(outcome, bytes)
