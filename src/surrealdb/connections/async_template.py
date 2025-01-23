@@ -95,7 +95,7 @@ class AsyncTemplate:
 
     async def query(
         self, sql: str, vars: Optional[Dict[str, Any]] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> Union[List[dict], dict]:
         """Run a set of SurrealQL statements against the database.
 
         Args:
@@ -107,7 +107,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def select(self, thing: str) -> List[Dict[str, Any]]:
+    async def select(self, thing: str) -> Union[List[dict], dict]:
         """Select all records in a table (or other entity),
         or a specific record, in the database.
 
@@ -125,8 +125,8 @@ class AsyncTemplate:
     async def create(
         self,
         thing: Union[str, RecordID, Table],
-        data: Optional[Union[List[dict], dict]] = None,
-    ) -> List[Dict[str, Any]]:
+        data: Optional[Union[Union[List[dict], dict], dict]] = None,
+    ) -> Union[List[dict], dict]:
         """Create a record in the database.
 
         This function will run the following query in the database:
@@ -143,7 +143,7 @@ class AsyncTemplate:
 
     async def update(
         self, thing: str, data: Optional[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    ) -> Union[List[dict], dict]:
         """Update all records in a table, or a specific record, in the database.
 
         This function replaces the current document / record data with the
@@ -173,7 +173,7 @@ class AsyncTemplate:
 
     async def merge(
         self, thing: str, data: Optional[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    ) -> Union[List[dict], dict]:
         """Modify by deep merging all records in a table, or a specific record, in the database.
 
         This function merges the current document / record data with the
@@ -205,7 +205,7 @@ class AsyncTemplate:
 
     async def patch(
         self, thing: str, data: Optional[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    ) -> Union[List[dict], dict]:
         """Apply JSON Patch changes to all records, or a specific record, in the database.
 
         This function patches the current document / record data with
@@ -232,20 +232,21 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def delete(self, thing: str) -> List[Dict[str, Any]]:
+    async def delete(self, thing: Union[str, RecordID, Table]) -> Union[List[dict], dict]:
         """Delete all records in a table, or a specific record, from the database.
 
         This function will run the following query in the database:
-        delete * from $thing
+        delete $thing
 
         Args:
-            thing: The table name or a record ID to delete.
+            thing: The table name or a RecordID to delete.
 
         Example:
+            Delete a specific record from a table
+                await db.delete(RecordID('person', 'h5wxrf2ewk8xjxosxtyc'))
+            
             Delete all records from a table
                 await db.delete('person')
-            Delete a specific record from a table
-                await db.delete('person:h5wxrf2ewk8xjxosxtyc')
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
