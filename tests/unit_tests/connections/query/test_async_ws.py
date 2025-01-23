@@ -50,6 +50,7 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
                 }
             ]
         )
+        await self.connection.query("DELETE user;")
 
 
 if __name__ == "__main__":

@@ -16,8 +16,15 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         _ = await self.connection.use(namespace=self.namespace, database=self.database_name)
 
     async def test_let(self):
-        outcome = await self.connection.invalidate()
-        print(outcome)
+        await self.connection.query("DELETE person;")
+        outcome = await self.connection.let('name', {
+            "first": 'Tobie',
+            "last": 'Morgan Hitchcock',
+        })
+        # await self.connection.query('CREATE person SET name = $name')
+        # outcome = await self.connection.query('SELECT * FROM person WHERE name.first = $name.first')
+        # print(outcome)
+        await self.connection.query("DELETE person;")
 
 
 if __name__ == "__main__":

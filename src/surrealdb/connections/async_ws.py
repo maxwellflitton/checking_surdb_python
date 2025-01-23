@@ -10,9 +10,10 @@ from surrealdb.connections.url import Url
 from surrealdb.data.cbor import decode
 from surrealdb.request_message.message import RequestMessage
 from surrealdb.request_message.methods import RequestMethod
+from surrealdb.connections.async_template import AsyncTemplate
 
 
-class AsyncWsSurrealConnection:
+class AsyncWsSurrealConnection(AsyncTemplate):
     """
     A single async connection to a SurrealDB instance. To be used once and discarded.
 

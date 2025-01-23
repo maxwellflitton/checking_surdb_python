@@ -72,7 +72,7 @@ class AsyncTemplate:
         Examples:
             await db.authenticate('insert token here')
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"authenticate not implemented for: {self}")
 
     async def let(self, key: str, value: Any) -> None:
         """Assign a value as a parameter for this connection.
@@ -84,7 +84,7 @@ class AsyncTemplate:
         Examples:
             await db.let...
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"let not implemented for: {self}")
 
     async def query(
             self, sql: str, vars: Optional[Dict[str, Any]] = None
