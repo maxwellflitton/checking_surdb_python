@@ -1,18 +1,25 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
+from data.types.record_id import RecordID
+from data.types.table import Table
+
 
 class AsyncTemplate:
 
-    async def connect(self, url: str, options: Dict) -> None:
+    async def connect(self, url: str, options: Optional[Dict] = None) -> None:
         """Connects to a local or remote database endpoint.
 
-        Examples:
+        Args:
+            url: The url of the database endpoint to connect to.
+            options: An object with options to initiate the connection to SurrealDB.
+
+        Example:
             # Connect to a remote endpoint
             await db.connect('https://cloud.surrealdb.com/rpc');
 
             # Specify a namespace and database pair to use
             await db.connect('https://cloud.surrealdb.com/rpc', {
-            	namespace: 'surrealdb',
-            	database: 'docs',
+                namespace: 'surrealdb',
+                database: 'docs',
             });
         """
         raise NotImplementedError(f"query not implemented for: {self}")
@@ -20,7 +27,7 @@ class AsyncTemplate:
     async def close(self) -> None:
         """Closes the persistent connection to the database.
 
-        Examples:
+        Example:
             await db.close()
         """
         raise NotImplementedError(f"query not implemented for: {self}")
@@ -32,7 +39,7 @@ class AsyncTemplate:
             namespace: Switches to a specific namespace.
             database: Switches to a specific database.
 
-        Examples:
+        Example:
             await db.use('test', 'test')
         """
         raise NotImplementedError(f"query not implemented for: {self}")
@@ -43,7 +50,7 @@ class AsyncTemplate:
         Args:
             vars: Variables used in a signup query.
 
-        Examples:
+        Example:
             await db.signup...
         """
         raise NotImplementedError(f"query not implemented for: {self}")
@@ -54,7 +61,7 @@ class AsyncTemplate:
         Args:
             vars: Variables used in a signin query.
 
-        Examples:
+        Example:
             await db.signin...
         """
         raise NotImplementedError(f"query not implemented for: {self}")
@@ -69,7 +76,7 @@ class AsyncTemplate:
         Args:
             token: The JWT authentication token.
 
-        Examples:
+        Example:
             await db.authenticate('insert token here')
         """
         raise NotImplementedError(f"query not implemented for: {self}")
@@ -81,13 +88,13 @@ class AsyncTemplate:
             key: Specifies the name of the variable.
             value: Assigns the value to the variable name.
 
-        Examples:
+        Example:
             await db.let...
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def query(
-            self, sql: str, vars: Optional[Dict[str, Any]] = None
+        self, sql: str, vars: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """Run a set of SurrealQL statements against the database.
 
@@ -95,7 +102,7 @@ class AsyncTemplate:
             sql: Specifies the SurrealQL statements.
             vars: Assigns variables which can be used in the query.
 
-        Examples:
+        Example:
             await db.query...
         """
         raise NotImplementedError(f"query not implemented for: {self}")
@@ -110,13 +117,15 @@ class AsyncTemplate:
         Args:
             thing: The table or record ID to select.
 
-        Examples:
+        Example:
             db.select...
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def create(
-            self, thing: str, data: Optional[Dict[str, Any]] = None
+        self,
+        thing: Union[str, RecordID, Table],
+        data: Optional[Union[List[dict], dict]] = None,
     ) -> List[Dict[str, Any]]:
         """Create a record in the database.
 
@@ -125,15 +134,15 @@ class AsyncTemplate:
 
         Args:
             thing: The table or record ID.
-            data: The document / record data to insert.
+            data (optional): The document / record data to insert.
 
-        Examples:
+        Example:
             db.create
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def update(
-            self, thing: str, data: Optional[Dict[str, Any]]
+        self, thing: str, data: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Update all records in a table, or a specific record, in the database.
 
@@ -147,7 +156,7 @@ class AsyncTemplate:
             thing: The table or record ID.
             data: The document / record data to insert.
 
-        Examples:
+        Example:
             Update all records in a table
                 person = await db.update('person')
 
@@ -163,7 +172,7 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def merge(
-            self, thing: str, data: Optional[Dict[str, Any]]
+        self, thing: str, data: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Modify by deep merging all records in a table, or a specific record, in the database.
 
@@ -177,7 +186,7 @@ class AsyncTemplate:
             thing: The table name or the specific record ID to change.
             data: The document / record data to insert.
 
-        Examples:
+        Example:
             Update all records in a table
                 people = await db.merge('person', {
                     'updated_at':  str(datetime.datetime.utcnow())
@@ -195,7 +204,7 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def patch(
-            self, thing: str, data: Optional[Dict[str, Any]]
+        self, thing: str, data: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Apply JSON Patch changes to all records, or a specific record, in the database.
 
@@ -209,7 +218,7 @@ class AsyncTemplate:
             thing: The table or record ID.
             data: The data to modify the record with.
 
-        Examples:
+        Example:
             Update all records in a table
                 people = await db.patch('person', [
                     { 'op': "replace", 'path': "/created_at", 'value': str(datetime.datetime.utcnow()) }])
@@ -232,7 +241,7 @@ class AsyncTemplate:
         Args:
             thing: The table name or a record ID to delete.
 
-        Examples:
+        Example:
             Delete all records from a table
                 await db.delete('person')
             Delete a specific record from a table
