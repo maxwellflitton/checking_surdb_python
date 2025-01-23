@@ -112,7 +112,7 @@ class AsyncTemplate:
         or a specific record, in the database.
 
         This function will run the following query in the database:
-        select * from $thing
+        `select * from $thing`
 
         Args:
             thing: The table or record ID to select.
@@ -130,7 +130,7 @@ class AsyncTemplate:
         """Create a record in the database.
 
         This function will run the following query in the database:
-        create $thing content $data
+        `create $thing content $data`
 
         Args:
             thing: The table or record ID.
@@ -150,7 +150,7 @@ class AsyncTemplate:
         specified data.
 
         This function will run the following query in the database:
-        update $thing content $data
+        `update $thing content $data`
 
         Args:
             thing: The table or record ID.
@@ -180,7 +180,7 @@ class AsyncTemplate:
         specified data.
 
         This function will run the following query in the database:
-        update $thing merge $data
+        `update $thing merge $data`
 
         Args:
             thing: The table name or the specific record ID to change.
@@ -212,7 +212,7 @@ class AsyncTemplate:
         the specified JSON Patch data.
 
         This function will run the following query in the database:
-        update $thing patch $data
+        `update $thing patch $data`
 
         Args:
             thing: The table or record ID.
@@ -236,7 +236,7 @@ class AsyncTemplate:
         """Delete all records in a table, or a specific record, from the database.
 
         This function will run the following query in the database:
-        delete $thing
+        `delete $thing`
 
         Args:
             thing: The table name or a RecordID to delete.
@@ -247,6 +247,28 @@ class AsyncTemplate:
             
             Delete all records from a table
                 await db.delete('person')
+        """
+        raise NotImplementedError(f"query not implemented for: {self}")
+
+    def info(self) -> dict:
+        """This returns the record of an authenticated record user.
+
+        Example:
+            await db.info()
+        """
+        raise NotImplementedError(f"query not implemented for: {self}")
+
+    def insert(self, thing: Union[str, Table], data: Union[List[dict], dict]):
+        """
+        Inserts one or multiple records in the database.
+
+        This function will run the following query in the database:
+        `INSERT INTO $thing $data`
+
+        Args:
+            thing: The table name to insert in to
+            data (optional): Either a single document/record or an array of documents/records to insert
+
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
