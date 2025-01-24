@@ -87,14 +87,21 @@ class AsyncTemplate:
         raise NotImplementedError(f"authenticate not implemented for: {self}")
 
     async def let(self, key: str, value: Any) -> None:
-        """Assign a value as a parameter for this connection.
+        """Assign a value as a variable for this connection.
 
         Args:
             key: Specifies the name of the variable.
             value: Assigns the value to the variable name.
 
         Example:
-            await db.let...
+            # Assign the variable on the connection
+            await db.let('name', {
+                first: 'Tobie',
+                last: 'Morgan Hitchcock',
+            })
+
+            # Use the variable in a subsequent query
+            await db.query('CREATE person SET name = $name')
         """
         raise NotImplementedError(f"let not implemented for: {self}")
 
