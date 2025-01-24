@@ -2,15 +2,15 @@
 A basic async connection to a SurrealDB instance.
 """
 import uuid
-from typing import Optional
+from typing import Optional, Any
 
 import websockets
 
+from surrealdb.connections.async_template import AsyncTemplate
 from surrealdb.connections.url import Url
 from surrealdb.data.cbor import decode
 from surrealdb.request_message.message import RequestMessage
 from surrealdb.request_message.methods import RequestMethod
-from surrealdb.connections.async_template import AsyncTemplate
 
 
 class AsyncWsSurrealConnection(AsyncTemplate):
@@ -146,6 +146,15 @@ class AsyncWsSurrealConnection(AsyncTemplate):
     async def invalidate(self) -> dict:
         message = RequestMessage(self.id, RequestMethod.INVALIDATE)
         return await self._send(message, "invalidating")
+
+    async def let(self, key: str, value: Any) -> None:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.LET,
+            key=key,
+            value=value
+        )
+        return await self._send(message, "leting")
 
 
     # async def set_space(self, socket) -> None:
