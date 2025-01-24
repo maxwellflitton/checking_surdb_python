@@ -196,7 +196,7 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def merge(
-        self, thing: str, data: Optional[Dict[str, Any]]
+        self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Modify by deep merging all records in a table, or a specific record, in the database.
 
@@ -327,8 +327,8 @@ class AsyncTemplate:
 
         Args:
             table: The table name to listen for changes for.
-            diff: If set to true, live notifications will include 
-            an array of JSON Patch objects, rather than 
+            diff: If set to true, live notifications will include
+            an array of JSON Patch objects, rather than
             the entire record for each notification. Defaults to false.
 
         Returns:
