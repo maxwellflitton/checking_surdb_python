@@ -258,7 +258,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    def insert(self, thing: Union[str, Table], data: Union[List[dict], dict]):
+    def insert(self, table: Union[str, Table], data: Union[List[dict], dict]) -> Union[List[dict], dict]:
         """
         Inserts one or multiple records in the database.
 
@@ -266,8 +266,28 @@ class AsyncTemplate:
         `INSERT INTO $thing $data`
 
         Args:
-            thing: The table name to insert in to
-            data (optional): Either a single document/record or an array of documents/records to insert
+            table: The table name to insert records in to
+            data: Either a single document/record or an array of documents/records to insert
+
+        Example:
+            await db.insert('person', [{ name: 'Tobie'}, { name: 'Jaime'}])
+
+        """
+        raise NotImplementedError(f"query not implemented for: {self}")
+    
+    def insert_relation(self, table: Union[str, Table], data: Union[List[dict], dict]) -> Union[List[dict], dict]:
+        """
+        Inserts one or multiple relations in the database.
+
+        This function will run the following query in the database:
+        `INSERT RELATION INTO $table $data`
+
+        Args:
+            table: The table name to insert records in to
+            data: Either a single document/record or an array of documents/records to insert
+
+        Example:
+            await db.insert_relation('likes', { in: person:1, id: 'object', out: person:2})
 
         """
         raise NotImplementedError(f"query not implemented for: {self}")
