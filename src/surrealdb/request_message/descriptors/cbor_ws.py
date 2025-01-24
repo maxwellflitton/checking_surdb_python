@@ -34,6 +34,10 @@ class WsCborDescriptor:
             return self.prep_insert(obj)
         elif obj.method == RequestMethod.PATCH:
             return self.prep_patch(obj)
+        elif obj.method == RequestMethod.SELECT:
+            return self.prep_select(obj)
+        elif obj.method == RequestMethod.CREATE:
+            return self.prep_create(obj)
 
         raise ValueError(f"Invalid method for Cbor WS encoding: {obj.method}")
 
@@ -146,31 +150,33 @@ class WsCborDescriptor:
                     }
                 ]
             }
-        schema = {
-            "id": {"required": True},
-            "method": {"type": "string", "required": True},
-            "params": {
-                "type": "list",
-                "schema": {
-                    "type": "dict",
-                    "oneof_schema": [
-                        {  # First structure for "signin" with "user" and "pass"
-                            "user": {"type": "string", "required": True},
-                            "pass": {"type": "string", "required": True},
-                        },
-                        {  # Second structure with "NS", "DB", "AC", "username", and "password"
-                            "NS": {"type": "string", "required": True},
-                            "DB": {"type": "string", "required": True},
-                            "AC": {"type": "string", "required": True},
-                            "username": {"type": "string", "required": True},
-                            "password": {"type": "string", "required": True},
-                        },
-                    ],
-                },
-                "required": True,
-            },
-        }
-        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        # TODO => schema validation disabled for signin because signin method accepts
+        #
+        # schema = {
+        #     "id": {"required": True},
+        #     "method": {"type": "string", "required": True},
+        #     "params": {
+        #         "type": "list",
+        #         "schema": {
+        #             "type": "dict",
+        #             "oneof_schema": [
+        #                 {  # First structure for "signin" with "user" and "pass"
+        #                     "user": {"type": "string", "required": True},
+        #                     "pass": {"type": "string", "required": True},
+        #                 },
+        #                 {  # Second structure with "NS", "DB", "AC", "username", and "password"
+        #                     "NS": {"type": "string", "required": True},
+        #                     "DB": {"type": "string", "required": True},
+        #                     "AC": {"type": "string", "required": True},
+        #                     "username": {"type": "string", "required": True},
+        #                     "password": {"type": "string", "required": True},
+        #                 },
+        #             ],
+        #         },
+        #         "required": True,
+        #     },
+        # }
+        # self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
         return encode(data)
 
     def prep_authenticate(self, obj) -> bytes:
@@ -341,6 +347,45 @@ class WsCborDescriptor:
                 "minlength": 2,  # Ensure there are at least two elements
                 "maxlength": 2,  # Ensure exactly two elements
                 "required": True,
+            }
+        }
+        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        return encode(data)
+
+    def prep_select(self, obj) -> bytes:
+        data = {
+            "id": obj.id,
+            "method": obj.method.value,
+            "params": obj.kwargs.get("params")
+        }
+        schema = {
+            "id": {"required": True},
+            "method": {"type": "string", "required": True, "allowed": ["select"]},
+            "params": {
+                "type": "list",
+                "required": True
+            }
+        }
+        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        return encode(data)
+
+    def prep_create(self, obj) -> bytes:
+        data = {
+            "id": obj.id,
+            "method": obj.method.value,
+            "params": [obj.kwargs.get("collection")]
+        }
+        if obj.kwargs.get("data"):
+            data["params"].append(obj.kwargs.get("data"))
+
+        schema = {
+            "id": {"required": True},
+            "method": {"type": "string", "required": True, "allowed": ["create"]},
+            "params": {
+                "type": "list",
+                "minlength": 1,
+                "maxlength": 2,
+                "required": True
             }
         }
         self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)

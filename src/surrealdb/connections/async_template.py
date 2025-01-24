@@ -1,8 +1,8 @@
 from typing import Optional, List, Dict, Any, Union
 from uuid import UUID
 from asyncio import Queue
-from data.types.record_id import RecordID
-from data.types.table import Table
+from surrealdb.data.types.record_id import RecordID
+from surrealdb.data.types.table import Table
 
 
 class AsyncTemplate:
@@ -120,7 +120,7 @@ class AsyncTemplate:
     async def query(
         self, sql: str, vars: Optional[Dict[str, Any]] = None
     ) -> Union[List[dict], dict]:
-        """Run a set of SurrealQL statements against the database.
+        """Run a unset of SurrealQL statements against the database.
 
         Args:
             sql: Specifies the SurrealQL statements.
@@ -327,7 +327,7 @@ class AsyncTemplate:
 
         Args:
             table: The table name to listen for changes for.
-            diff: If set to true, live notifications will include
+            diff: If unset to true, live notifications will include
             an array of JSON Patch objects, rather than
             the entire record for each notification. Defaults to false.
 

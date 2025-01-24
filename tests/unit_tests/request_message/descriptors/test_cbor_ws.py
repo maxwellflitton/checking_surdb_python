@@ -152,9 +152,9 @@ class TestWsCborAdapter(TestCase):
     def test_create_pass_params(self):
         message = RequestMessage(
             1,
-            RequestMethod.QUERY,
-            query="SELECT * FROM {table}",
-            params={"table": "table"}
+            RequestMethod.CREATE,
+            collection="person",
+            data={"table": "table"}
         )
         outcome = message.WS_CBOR_DESCRIPTOR
         self.assertIsInstance(outcome, bytes)
@@ -185,6 +185,15 @@ class TestWsCborAdapter(TestCase):
             RequestMethod.PATCH,
             collection="table",
             params=[{"key": "value"}, {"key": "value"}]
+        )
+        outcome = message.WS_CBOR_DESCRIPTOR
+        self.assertIsInstance(outcome, bytes)
+
+    def test_select_pass(self):
+        message = RequestMessage(
+            1,
+            RequestMethod.SELECT,
+            params=["table", "user"],
         )
         outcome = message.WS_CBOR_DESCRIPTOR
         self.assertIsInstance(outcome, bytes)

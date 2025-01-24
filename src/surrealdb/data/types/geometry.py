@@ -1,5 +1,5 @@
 """
-Defines a set of geometry classes for representing geometric shapes such as points, lines, polygons, and collections.
+Defines a unset of geometry classes for representing geometric shapes such as points, lines, polygons, and collections.
 """
 
 from dataclasses import dataclass

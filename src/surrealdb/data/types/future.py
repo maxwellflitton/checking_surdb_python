@@ -9,7 +9,7 @@ from typing import Any
 @dataclass
 class Future:
     """
-    Represents a placeholder for a value that may be set or resolved in the future.
+    Represents a placeholder for a value that may be unset or resolved in the future.
 
     Attributes:
         value: The value held by the Future object. This can be of any type.

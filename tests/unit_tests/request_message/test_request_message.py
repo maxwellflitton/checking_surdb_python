@@ -10,7 +10,6 @@ class TestRequestMessage(TestCase):
 
     def test_init(self):
         request_message = RequestMessage(1, self.method, one="two", three="four")
-        print(request_message.kwargs)
 
         self.assertEqual(request_message.method, self.method)
         self.assertEqual(request_message.kwargs, {"one": "two", "three": "four"})

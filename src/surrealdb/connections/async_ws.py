@@ -2,7 +2,7 @@
 A basic async connection to a SurrealDB instance.
 """
 import uuid
-from typing import Optional, Any
+from typing import Optional, Any, Dict, Union, List
 
 import websockets
 
@@ -11,6 +11,8 @@ from surrealdb.connections.url import Url
 from surrealdb.data.cbor import decode
 from surrealdb.request_message.message import RequestMessage
 from surrealdb.request_message.methods import RequestMethod
+from surrealdb.data.types.record_id import RecordID
+from surrealdb.data.types.table import Table
 
 
 class AsyncWsSurrealConnection(AsyncTemplate):
@@ -78,7 +80,9 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         self.check_response_for_error(response, process)
         return response
 
-    async def signin(self, username: str, password: str) -> None:
+    # async def signup(self, vars: Dict[str, Any]) -> str:
+
+    async def signin(self, vars: Dict[str, Any]) -> str:
         """
         Signs in to the SurrealDB instance.
 
@@ -87,8 +91,11 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         message = RequestMessage(
             self.id,
             RequestMethod.SIGN_IN,
-            username=username,
-            password=password,
+            username=vars.get("username"),
+            password=vars.get("password"),
+            account=vars.get("account"),
+            database=vars.get("database"),
+            namespace=vars.get("namespace"),
         )
         response = await self._send(message, "signing in")
         self.check_response_for_result(response, "signing in")
@@ -154,7 +161,45 @@ class AsyncWsSurrealConnection(AsyncTemplate):
             key=key,
             value=value
         )
-        return await self._send(message, "letting")
+        await self._send(message, "letting")
+
+    async def unset(self, key: str) -> None:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.UNSET,
+            params=[key]
+        )
+        await self._send(message, "unsetting")
+
+    async def select(self, thing: str) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.SELECT,
+            params=[thing]
+        )
+        response = await self._send(message, "select")
+        self.check_response_for_result(response, "select")
+        return response["result"]
+
+    async def create(
+            self,
+            thing: Union[str, RecordID, Table],
+            data: Optional[Union[Union[List[dict], dict], dict]] = None,
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.CREATE,
+            collection=thing,
+            data=data
+        )
+        response = await self._send(message, "create")
+        self.check_response_for_result(response, "create")
+        return response["result"]
+
+    async def update(
+            self, thing: str, data: Optional[Dict[str, Any]]
+    ) -> Union[List[dict], dict]:
+        pass
 
 
     # async def set_space(self, socket) -> None:
@@ -179,7 +224,7 @@ class AsyncWsSurrealConnection(AsyncTemplate):
     #     query = Query(query, vars)
     #
     #     async with websockets.connect(self.url, max_size=self.max_size, subprotocols=[websockets.Subprotocol("cbor")]) as websocket:
-    #         # login and set the space
+    #         # login and unset the space
     #         await self.signin(websocket)
     #         await self.set_space(websocket)
     #
