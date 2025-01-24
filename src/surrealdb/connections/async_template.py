@@ -46,7 +46,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def signup(self, vars: Dict[str, Any]) -> str:
+    async def signup(self, vars: Dict) -> str:
         """Sign this connection up to a specific authentication scope.
 
         Args:
@@ -57,7 +57,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def signin(self, vars: Dict[str, Any]) -> str:
+    async def signin(self, vars: Dict) -> str:
         """Sign this connection in to a specific authentication scope.
 
         Args:
@@ -118,20 +118,23 @@ class AsyncTemplate:
         raise NotImplementedError(f"let not implemented for: {self}")
 
     async def query(
-        self, sql: str, vars: Optional[Dict[str, Any]] = None
+        self, query: str, vars: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Run a set of SurrealQL statements against the database.
 
         Args:
-            sql: Specifies the SurrealQL statements.
+            query: Specifies the SurrealQL statements.
             vars: Assigns variables which can be used in the query.
 
         Example:
-            await db.query...
+            await db.query(
+                'CREATE person SET name = "John"; SELECT * FROM type::table($tb);',
+                { tb: 'person' }
+            )
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def select(self, thing: str) -> Union[List[dict], dict]:
+    async def select(self, thing: Union[str, RecordID, Table]) -> Union[List[dict], dict]:
         """Select all records in a table (or other entity),
         or a specific record, in the database.
 
@@ -142,7 +145,7 @@ class AsyncTemplate:
             thing: The table or record ID to select.
 
         Example:
-            db.select...
+            db.select('person')
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
