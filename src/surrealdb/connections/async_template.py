@@ -1,4 +1,5 @@
 from typing import Optional, List, Dict, Any, Union
+from uuid import UUID
 from data.types.record_id import RecordID
 from data.types.table import Table
 
@@ -310,10 +311,14 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def kill(self, query_uuid: str) -> None:
+    async def kill(self, query_uuid: Union[str, UUID]) -> None:
         """Kills a running live query by it's UUID.
 
         Args:
             query_uuid: The UUID of the live query you wish to kill.
+
+        Example:
+            await db.kill(UUID)
+
         """
         raise NotImplementedError(f"query not implemented for: {self}")
