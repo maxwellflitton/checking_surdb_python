@@ -256,7 +256,7 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def patch(
-        self, thing: str, data: Optional[Dict[str, Any]]
+        self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Apply JSON Patch changes to all records, or a specific record, in the database.
 
