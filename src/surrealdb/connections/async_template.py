@@ -48,23 +48,38 @@ class AsyncTemplate:
 
     async def signup(self, vars: Dict) -> str:
         """Sign this connection up to a specific authentication scope.
+        [See the docs](https://surrealdb.com/docs/sdk/python/methods/signup)
 
         Args:
             vars: Variables used in a signup query.
 
         Example:
-            await db.signup...
+            await db.signup({
+                namespace: 'surrealdb',
+                database: 'docs',
+                access: 'user',
+            
+                # Also pass any properties required by the scope definition
+                variables: {
+                    email: 'info@surrealdb.com',
+                    pass: '123456',
+                },
+            })
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def signin(self, vars: Dict) -> str:
         """Sign this connection in to a specific authentication scope.
+        [See the docs](https://surrealdb.com/docs/sdk/python/methods/signin)
 
         Args:
             vars: Variables used in a signin query.
 
         Example:
-            await db.signin...
+            await db.signin({
+                username: 'root',
+                password: 'surrealdb',
+            })
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
@@ -395,3 +410,18 @@ class AsyncTemplate:
 
         """
         raise NotImplementedError(f"query not implemented for: {self}")
+
+
+    async def signin(self, vars: Dict) -> str:
+        """Sign this connection in to a specific authentication scope.
+        [See the docs](https://surrealdb.com/docs/sdk/python/methods/signin)
+
+        Args:
+            vars: Variables used in a signin query.
+
+        Example:
+            await db.signin({
+                username: 'root',
+                password: 'surrealdb',
+            })
+        """
