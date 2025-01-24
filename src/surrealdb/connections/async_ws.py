@@ -197,9 +197,19 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         return response["result"]
 
     async def update(
-            self, thing: str, data: Optional[Dict[str, Any]]
+            self,
+            thing: Union[str, RecordID, Table],
+            data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
-        pass
+        message = RequestMessage(
+            self.id,
+            RequestMethod.UPDATE,
+            record_id=thing,
+            data=data
+        )
+        response = await self._send(message, "update")
+        self.check_response_for_result(response, "update")
+        return response["result"]
 
 
     # async def set_space(self, socket) -> None:

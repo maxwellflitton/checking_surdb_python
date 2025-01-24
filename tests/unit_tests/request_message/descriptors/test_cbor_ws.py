@@ -198,6 +198,16 @@ class TestWsCborAdapter(TestCase):
         outcome = message.WS_CBOR_DESCRIPTOR
         self.assertIsInstance(outcome, bytes)
 
+    def test_update_pass(self):
+        message = RequestMessage(
+            1,
+            RequestMethod.UPDATE,
+            record_id="test",
+            data={"table": "table"}
+        )
+        outcome = message.WS_CBOR_DESCRIPTOR
+        self.assertIsInstance(outcome, bytes)
+
 
 if __name__ == "__main__":
     main()

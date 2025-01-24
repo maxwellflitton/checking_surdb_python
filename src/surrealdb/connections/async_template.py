@@ -184,7 +184,9 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def update(
-        self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
+        self,
+        thing: Union[str, RecordID, Table],
+        data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Update all records in a table, or a specific record, in the database.
 

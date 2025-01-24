@@ -38,6 +38,8 @@ class WsCborDescriptor:
             return self.prep_select(obj)
         elif obj.method == RequestMethod.CREATE:
             return self.prep_create(obj)
+        elif obj.method == RequestMethod.UPDATE:
+            return self.prep_update(obj)
 
         raise ValueError(f"Invalid method for Cbor WS encoding: {obj.method}")
 
@@ -381,6 +383,28 @@ class WsCborDescriptor:
         schema = {
             "id": {"required": True},
             "method": {"type": "string", "required": True, "allowed": ["create"]},
+            "params": {
+                "type": "list",
+                "minlength": 1,
+                "maxlength": 2,
+                "required": True
+            }
+        }
+        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        return encode(data)
+
+    def prep_update(self, obj) -> bytes:
+        data = {
+            "id": obj.id,
+            "method": obj.method.value,
+            "params": [
+                obj.kwargs.get("record_id"),
+                obj.kwargs.get("data", dict())
+            ]
+        }
+        schema = {
+            "id": {"required": True},
+            "method": {"type": "string", "required": True, "allowed": ["update"]},
             "params": {
                 "type": "list",
                 "minlength": 1,
