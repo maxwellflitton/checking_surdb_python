@@ -104,6 +104,17 @@ class AsyncTemplate:
             await db.query('CREATE person SET name = $name')
         """
         raise NotImplementedError(f"let not implemented for: {self}")
+    
+    async def unset(self, key: str) -> None:
+        """Removes a variable for this connection.
+
+        Args:
+            key: Specifies the name of the variable.
+
+        Example:
+            await db.unset('name')
+        """
+        raise NotImplementedError(f"let not implemented for: {self}")
 
     async def query(
         self, sql: str, vars: Optional[Dict[str, Any]] = None
