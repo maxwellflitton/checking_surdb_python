@@ -211,63 +211,7 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         self.check_response_for_result(response, "update")
         return response["result"]
 
-
-    # async def set_space(self, socket) -> None:
-    #     """
-    #     Sets the namespace and database for the connection.
-    #
-    #     :return: None
-    #     """
-    #     # await socket.send(json.dumps(self.use_params, ensure_ascii=False))
-    #     # _ = json.loads(await socket.recv())
-    #     await socket.send(encode(self.use_params))
-    #     _ = decode(await socket.recv())
-    #
-    # async def query(self, query: str, vars: Optional[Dict[str, Any]] = None) -> dict:
-    #     """
-    #     Queries the SurrealDB instance.
-    #
-    #     :param query: The query to run
-    #     :param vars: The variables to use in the query
-    #     :return: The result of the query
-    #     """
-    #     query = Query(query, vars)
-    #
-    #     async with websockets.connect(self.url, max_size=self.max_size, subprotocols=[websockets.Subprotocol("cbor")]) as websocket:
-    #         # login and unset the space
-    #         await self.signin(websocket)
-    #         await self.set_space(websocket)
-    #
-    #         # send and receive the query
-    #         await websocket.send(encode(query.query_params))
-    #         response = decode(await websocket.recv())
-    #         if response.get("result") is None:
-    #             raise Exception(f"error querying no result: {response}")
-    #         response = response["result"]
-    #         if response[0].get("status") is not None and response[0].get("status") == "ERR":
-    #             raise Exception(f"error querying: {response[0].get('result')}")
-    #     return response[0]["result"]
-    #
-    # @property
-    # def sign_params(self) -> dict:
-    #     return {
-    #         "id": self.id,
-    #         "method": "signin",
-    #         "params": [
-    #             {
-    #                 "user": self.user,
-    #                 "pass": self.password
-    #             }
-    #         ]
-    #     }
-    #
-    # @property
-    # def use_params(self) -> dict:
-    #     return {
-    #         "id": self.id,
-    #         "method": "use",
-    #         "params": [
-    #             self.namespace,
-    #             self.database
-    #         ]
-    #     }
+    async def merge(
+            self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
+    ) -> Union[List[dict], dict]:
+        pass
