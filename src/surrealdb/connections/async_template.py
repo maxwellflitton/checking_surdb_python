@@ -67,7 +67,11 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def invalidate(self) -> None:
-        """Invalidate the authentication for the current connection."""
+        """Invalidate the authentication for the current connection.
+        
+        Example:
+            await db.invalidate()
+        """
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def authenticate(self, token: str) -> None:
