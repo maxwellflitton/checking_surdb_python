@@ -1,13 +1,13 @@
 from typing import Optional, List, Dict, Any, Union
 from uuid import UUID
 from asyncio import Queue
-from surrealdb.data.types.record_id import RecordID
-from surrealdb.data.types.table import Table
+from data.types.record_id import RecordID
+from data.types.table import Table
 
 
-class AsyncTemplate:
+class SyncTemplate:
 
-    async def connect(self, url: str, options: Optional[Dict] = None) -> None:
+    def connect(self, url: str, options: Optional[Dict] = None) -> None:
         """Connects to a local or remote database endpoint.
 
         Args:
@@ -16,25 +16,25 @@ class AsyncTemplate:
 
         Example:
             # Connect to a remote endpoint
-            await db.connect('https://cloud.surrealdb.com/rpc');
+            db.connect('https://cloud.surrealdb.com/rpc');
 
             # Specify a namespace and database pair to use
-            await db.connect('https://cloud.surrealdb.com/rpc', {
+            db.connect('https://cloud.surrealdb.com/rpc', {
                 namespace: 'surrealdb',
                 database: 'docs',
             });
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def close(self) -> None:
+    def close(self) -> None:
         """Closes the persistent connection to the database.
 
         Example:
-            await db.close()
+            db.close()
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def use(self, namespace: str, database: str) -> None:
+    def use(self, namespace: str, database: str) -> None:
         """Switch to a specific namespace and database.
 
         Args:
@@ -42,11 +42,11 @@ class AsyncTemplate:
             database: Switches to a specific database.
 
         Example:
-            await db.use('test', 'test')
+            db.use('test', 'test')
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def signup(self, vars: Dict) -> str:
+    def signup(self, vars: Dict) -> str:
         """Sign this connection up to a specific authentication scope.
         [See the docs](https://surrealdb.com/docs/sdk/python/methods/signup)
 
@@ -54,7 +54,7 @@ class AsyncTemplate:
             vars: Variables used in a signup query.
 
         Example:
-            await db.signup({
+            db.signup({
                 namespace: 'surrealdb',
                 database: 'docs',
                 access: 'user',
@@ -68,7 +68,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def signin(self, vars: Dict) -> str:
+    def signin(self, vars: Dict) -> str:
         """Sign this connection in to a specific authentication scope.
         [See the docs](https://surrealdb.com/docs/sdk/python/methods/signin)
 
@@ -76,33 +76,33 @@ class AsyncTemplate:
             vars: Variables used in a signin query.
 
         Example:
-            await db.signin({
+            db.signin({
                 username: 'root',
                 password: 'surrealdb',
             })
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def invalidate(self) -> None:
+    def invalidate(self) -> None:
         """Invalidate the authentication for the current connection.
 
         Example:
-            await db.invalidate()
+            db.invalidate()
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def authenticate(self, token: str) -> None:
+    def authenticate(self, token: str) -> None:
         """Authenticate the current connection with a JWT token.
 
         Args:
             token: The JWT authentication token.
 
         Example:
-            await db.authenticate('insert token here')
+            db.authenticate('insert token here')
         """
         raise NotImplementedError(f"authenticate not implemented for: {self}")
 
-    async def let(self, key: str, value: Any) -> None:
+    def let(self, key: str, value: Any) -> None:
         """Assign a value as a variable for this connection.
 
         Args:
@@ -111,45 +111,45 @@ class AsyncTemplate:
 
         Example:
             # Assign the variable on the connection
-            await db.let('name', {
+            db.let('name', {
                 first: 'Tobie',
                 last: 'Morgan Hitchcock',
             })
 
             # Use the variable in a subsequent query
-            await db.query('CREATE person SET name = $name')
+            db.query('CREATE person SET name = $name')
         """
         raise NotImplementedError(f"let not implemented for: {self}")
 
-    async def unset(self, key: str) -> None:
+    def unset(self, key: str) -> None:
         """Removes a variable for this connection.
 
         Args:
             key: Specifies the name of the variable.
 
         Example:
-            await db.unset('name')
+            db.unset('name')
         """
         raise NotImplementedError(f"let not implemented for: {self}")
 
-    async def query(
+    def query(
         self, query: str, vars: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
-        """Run a unset of SurrealQL statements against the database.
+        """Run a set of SurrealQL statements against the database.
 
         Args:
             query: Specifies the SurrealQL statements.
             vars: Assigns variables which can be used in the query.
 
         Example:
-            await db.query(
+            db.query(
                 'CREATE person SET name = "John"; SELECT * FROM type::table($tb);',
                 { tb: 'person' }
             )
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def select(self, thing: Union[str, RecordID, Table]) -> Union[List[dict], dict]:
+    def select(self, thing: Union[str, RecordID, Table]) -> Union[List[dict], dict]:
         """Select all records in a table (or other entity),
         or a specific record, in the database.
 
@@ -164,7 +164,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def create(
+    def create(
         self,
         thing: Union[str, RecordID, Table],
         data: Optional[Union[Union[List[dict], dict], dict]] = None,
@@ -183,7 +183,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def update(
+    def update(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Update all records in a table, or a specific record, in the database.
@@ -200,10 +200,10 @@ class AsyncTemplate:
 
         Example:
             Update all records in a table
-                person = await db.update('person')
+                person = db.update('person')
 
             Update a record with a specific ID
-                record = await db.update('person:tobie', {
+                record = db.update('person:tobie', {
                     'name': 'Tobie',
                     'settings': {
                         'active': true,
@@ -213,7 +213,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
     
-    async def upsert(
+    def upsert(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Insert records into the database, or to update them if they exist.
@@ -228,10 +228,10 @@ class AsyncTemplate:
 
         Example:
             Insert or update all records in a table
-                person = await db.upsert('person')
+                person = db.upsert('person')
 
             Insert or update a record with a specific ID
-                record = await db.upsert('person:tobie', {
+                record = db.upsert('person:tobie', {
                     'name': 'Tobie',
                     'settings': {
                         'active': true,
@@ -241,7 +241,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def merge(
+    def merge(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Modify by deep merging all records in a table, or a specific record, in the database.
@@ -258,12 +258,12 @@ class AsyncTemplate:
 
         Example:
             Update all records in a table
-                people = await db.merge('person', {
+                people = db.merge('person', {
                     'updated_at':  str(datetime.datetime.utcnow())
                     })
 
             Update a record with a specific ID
-                person = await db.merge('person:tobie', {
+                person = db.merge('person:tobie', {
                     'updated_at': str(datetime.datetime.utcnow()),
                     'settings': {
                         'active': True,
@@ -273,7 +273,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def patch(
+    def patch(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Apply JSON Patch changes to all records, or a specific record, in the database.
@@ -290,11 +290,11 @@ class AsyncTemplate:
 
         Example:
             Update all records in a table
-                people = await db.patch('person', [
+                people = db.patch('person', [
                     { 'op': "replace", 'path': "/created_at", 'value': str(datetime.datetime.utcnow()) }])
 
             Update a record with a specific ID
-            person = await db.patch('person:tobie', [
+            person = db.patch('person:tobie', [
                 { 'op': "replace", 'path': "/settings/active", 'value': False },
                 { 'op': "add", "path": "/tags", "value": ["developer", "engineer"] },
                 { 'op': "remove", "path": "/temp" },
@@ -302,7 +302,7 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def delete(
+    def delete(
         self, thing: Union[str, RecordID, Table]
     ) -> Union[List[dict], dict]:
         """Delete all records in a table, or a specific record, from the database.
@@ -315,10 +315,10 @@ class AsyncTemplate:
 
         Example:
             Delete a specific record from a table
-                await db.delete(RecordID('person', 'h5wxrf2ewk8xjxosxtyc'))
+                db.delete(RecordID('person', 'h5wxrf2ewk8xjxosxtyc'))
 
             Delete all records from a table
-                await db.delete('person')
+                db.delete('person')
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
@@ -326,7 +326,7 @@ class AsyncTemplate:
         """This returns the record of an authenticated record user.
 
         Example:
-            await db.info()
+            db.info()
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
@@ -344,7 +344,7 @@ class AsyncTemplate:
             data: Either a single document/record or an array of documents/records to insert
 
         Example:
-            await db.insert('person', [{ name: 'Tobie'}, { name: 'Jaime'}])
+            db.insert('person', [{ name: 'Tobie'}, { name: 'Jaime'}])
 
         """
         raise NotImplementedError(f"query not implemented for: {self}")
@@ -363,17 +363,17 @@ class AsyncTemplate:
             data: Either a single document/record or an array of documents/records to insert
 
         Example:
-            await db.insert_relation('likes', { in: person:1, id: 'object', out: person:2})
+            db.insert_relation('likes', { in: person:1, id: 'object', out: person:2})
 
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def live(self, table: Union[str, Table], diff: bool = False) -> UUID:
+    def live(self, table: Union[str, Table], diff: bool = False) -> UUID:
         """Initiates a live query for a specified table name.
 
         Args:
             table: The table name to listen for changes for.
-            diff: If unset to true, live notifications will include
+            diff: If set to true, live notifications will include
             an array of JSON Patch objects, rather than
             the entire record for each notification. Defaults to false.
 
@@ -381,11 +381,11 @@ class AsyncTemplate:
             The live query uuid
 
         Example:
-            await db.live('person')
+            db.live('person')
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def subscribe_live(self, query_uuid: Union[str, UUID]) -> Queue:
+    def subscribe_live(self, query_uuid: Union[str, UUID]) -> Queue:
         """Live notification returns a queue that receives notification messages from the back end.
 
         Args:
@@ -395,24 +395,24 @@ class AsyncTemplate:
             the notification queue
 
         Example:
-            await db.subscribe_live(UUID)
+            db.subscribe_live(UUID)
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def kill(self, query_uuid: Union[str, UUID]) -> None:
+    def kill(self, query_uuid: Union[str, UUID]) -> None:
         """Kills a running live query by it's UUID.
 
         Args:
             query_uuid: The UUID of the live query you wish to kill.
 
         Example:
-            await db.kill(UUID)
+            db.kill(UUID)
 
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
 
-    async def signin(self, vars: Dict) -> str:
+    def signin(self, vars: Dict) -> str:
         """Sign this connection in to a specific authentication scope.
         [See the docs](https://surrealdb.com/docs/sdk/python/methods/signin)
 
@@ -420,7 +420,7 @@ class AsyncTemplate:
             vars: Variables used in a signin query.
 
         Example:
-            await db.signin({
+            db.signin({
                 username: 'root',
                 password: 'surrealdb',
             })
