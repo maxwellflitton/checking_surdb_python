@@ -166,7 +166,7 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def update(
-        self, thing: str, data: Optional[Dict[str, Any]]
+        self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Update all records in a table, or a specific record, in the database.
 
@@ -178,7 +178,7 @@ class AsyncTemplate:
 
         Args:
             thing: The table or record ID.
-            data: The document / record data to insert.
+            data (optional): The document / record data to insert.
 
         Example:
             Update all records in a table
@@ -186,6 +186,34 @@ class AsyncTemplate:
 
             Update a record with a specific ID
                 record = await db.update('person:tobie', {
+                    'name': 'Tobie',
+                    'settings': {
+                        'active': true,
+                        'marketing': true,
+                        },
+                })
+        """
+        raise NotImplementedError(f"query not implemented for: {self}")
+    
+    async def upsert(
+        self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
+    ) -> Union[List[dict], dict]:
+        """Insert records into the database, or to update them if they exist.
+
+
+        This function will run the following query in the database:
+        `upsert $thing content $data`
+
+        Args:
+            thing: The table or record ID.
+            data (optional): The document / record data to insert.
+
+        Example:
+            Insert or update all records in a table
+                person = await db.upsert('person')
+
+            Insert or update a record with a specific ID
+                record = await db.upsert('person:tobie', {
                     'name': 'Tobie',
                     'settings': {
                         'active': true,
@@ -208,7 +236,7 @@ class AsyncTemplate:
 
         Args:
             thing: The table name or the specific record ID to change.
-            data: The document / record data to insert.
+            data (optional): The document / record data to insert.
 
         Example:
             Update all records in a table
