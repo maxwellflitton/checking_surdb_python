@@ -1,4 +1,6 @@
 from typing import Optional, List, Dict, Any, Union
+from uuid import UUID
+from asyncio import Queue
 from data.types.record_id import RecordID
 from data.types.table import Table
 
@@ -67,7 +69,11 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def invalidate(self) -> None:
-        """Invalidate the authentication for the current connection."""
+        """Invalidate the authentication for the current connection.
+
+        Example:
+            await db.invalidate()
+        """
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def authenticate(self, token: str) -> None:
@@ -82,14 +88,32 @@ class AsyncTemplate:
         raise NotImplementedError(f"authenticate not implemented for: {self}")
 
     async def let(self, key: str, value: Any) -> None:
-        """Assign a value as a parameter for this connection.
+        """Assign a value as a variable for this connection.
 
         Args:
             key: Specifies the name of the variable.
             value: Assigns the value to the variable name.
 
         Example:
-            await db.let...
+            # Assign the variable on the connection
+            await db.let('name', {
+                first: 'Tobie',
+                last: 'Morgan Hitchcock',
+            })
+
+            # Use the variable in a subsequent query
+            await db.query('CREATE person SET name = $name')
+        """
+        raise NotImplementedError(f"let not implemented for: {self}")
+
+    async def unset(self, key: str) -> None:
+        """Removes a variable for this connection.
+
+        Args:
+            key: Specifies the name of the variable.
+
+        Example:
+            await db.unset('name')
         """
         raise NotImplementedError(f"let not implemented for: {self}")
 
@@ -172,7 +196,7 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def merge(
-        self, thing: str, data: Optional[Dict[str, Any]]
+        self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
         """Modify by deep merging all records in a table, or a specific record, in the database.
 
@@ -232,7 +256,9 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def delete(self, thing: Union[str, RecordID, Table]) -> Union[List[dict], dict]:
+    async def delete(
+        self, thing: Union[str, RecordID, Table]
+    ) -> Union[List[dict], dict]:
         """Delete all records in a table, or a specific record, from the database.
 
         This function will run the following query in the database:
@@ -244,7 +270,7 @@ class AsyncTemplate:
         Example:
             Delete a specific record from a table
                 await db.delete(RecordID('person', 'h5wxrf2ewk8xjxosxtyc'))
-            
+
             Delete all records from a table
                 await db.delete('person')
         """
@@ -258,7 +284,9 @@ class AsyncTemplate:
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    def insert(self, thing: Union[str, Table], data: Union[List[dict], dict]):
+    def insert(
+        self, table: Union[str, Table], data: Union[List[dict], dict]
+    ) -> Union[List[dict], dict]:
         """
         Inserts one or multiple records in the database.
 
@@ -266,30 +294,73 @@ class AsyncTemplate:
         `INSERT INTO $thing $data`
 
         Args:
-            thing: The table name to insert in to
-            data (optional): Either a single document/record or an array of documents/records to insert
+            table: The table name to insert records in to
+            data: Either a single document/record or an array of documents/records to insert
+
+        Example:
+            await db.insert('person', [{ name: 'Tobie'}, { name: 'Jaime'}])
 
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def live(self, table: str, diff: bool = False) -> str:
-        """Initiates a live query.
+    def insert_relation(
+        self, table: Union[str, Table], data: Union[List[dict], dict]
+    ) -> Union[List[dict], dict]:
+        """
+        Inserts one or multiple relations in the database.
+
+        This function will run the following query in the database:
+        `INSERT RELATION INTO $table $data`
+
+        Args:
+            table: The table name to insert records in to
+            data: Either a single document/record or an array of documents/records to insert
+
+        Example:
+            await db.insert_relation('likes', { in: person:1, id: 'object', out: person:2})
+
+        """
+        raise NotImplementedError(f"query not implemented for: {self}")
+
+    async def live(self, table: Union[str, Table], diff: bool = False) -> UUID:
+        """Initiates a live query for a specified table name.
 
         Args:
             table: The table name to listen for changes for.
             diff: If set to true, live notifications will include
-                an array of JSON Patch objects,
-                rather than the entire record for each notification.
+            an array of JSON Patch objects, rather than
+            the entire record for each notification. Defaults to false.
 
         Returns:
-            UUID string.
+            The live query uuid
+
+        Example:
+            await db.live('person')
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
-    async def kill(self, query_uuid: str) -> None:
+    async def subscribe_live(self, query_uuid: Union[str, UUID]) -> Queue:
+        """Live notification returns a queue that receives notification messages from the back end.
+
+        Args:
+            query_uuid: The uuid for the live query
+
+        Returns:
+            the notification queue
+
+        Example:
+            await db.subscribe_live(UUID)
+        """
+        raise NotImplementedError(f"query not implemented for: {self}")
+
+    async def kill(self, query_uuid: Union[str, UUID]) -> None:
         """Kills a running live query by it's UUID.
 
         Args:
             query_uuid: The UUID of the live query you wish to kill.
+
+        Example:
+            await db.kill(UUID)
+
         """
         raise NotImplementedError(f"query not implemented for: {self}")
