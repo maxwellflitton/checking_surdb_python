@@ -154,7 +154,7 @@ class AsyncWsSurrealConnection(AsyncTemplate):
             key=key,
             value=value
         )
-        return await self._send(message, "leting")
+        return await self._send(message, "letting")
 
 
     # async def set_space(self, socket) -> None:
