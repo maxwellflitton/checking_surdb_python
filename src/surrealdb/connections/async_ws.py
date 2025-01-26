@@ -214,4 +214,26 @@ class AsyncWsSurrealConnection(AsyncTemplate):
     async def merge(
             self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
-        pass
+        message = RequestMessage(
+            self.id,
+            RequestMethod.MERGE,
+            record_id=thing,
+            data=data
+        )
+        response = await self._send(message, "merge")
+        self.check_response_for_result(response, "merge")
+        return response["result"]
+
+    async def patch(
+            self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.PATCH,
+            collection=thing,
+            params=data
+        )
+        response = await self._send(message, "patch")
+        self.check_response_for_result(response, "patch")
+        return response["result"]
+

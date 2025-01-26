@@ -40,6 +40,8 @@ class WsCborDescriptor:
             return self.prep_create(obj)
         elif obj.method == RequestMethod.UPDATE:
             return self.prep_update(obj)
+        elif obj.method == RequestMethod.MERGE:
+            return self.prep_merge(obj)
 
         raise ValueError(f"Invalid method for Cbor WS encoding: {obj.method}")
 
@@ -405,6 +407,28 @@ class WsCborDescriptor:
         schema = {
             "id": {"required": True},
             "method": {"type": "string", "required": True, "allowed": ["update"]},
+            "params": {
+                "type": "list",
+                "minlength": 1,
+                "maxlength": 2,
+                "required": True
+            }
+        }
+        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        return encode(data)
+
+    def prep_merge(self, obj) -> bytes:
+        data = {
+            "id": obj.id,
+            "method": obj.method.value,
+            "params": [
+                obj.kwargs.get("record_id"),
+                obj.kwargs.get("data", dict())
+            ]
+        }
+        schema = {
+            "id": {"required": True},
+            "method": {"type": "string", "required": True, "allowed": ["merge"]},
             "params": {
                 "type": "list",
                 "minlength": 1,
