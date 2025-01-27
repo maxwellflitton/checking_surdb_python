@@ -388,7 +388,7 @@ class AsyncTemplate:
         raise NotImplementedError(f"query not implemented for: {self}")
 
     async def subscribe_live(self, query_uuid: Union[str, UUID]) -> Queue:
-        """Live notification returns a queue that receives notification messages from the back end.
+        """Returns a queue that receives notification messages from a running live query.
 
         Args:
             query_uuid: The uuid for the live query
