@@ -2,7 +2,9 @@
 A basic async connection to a SurrealDB instance.
 """
 import uuid
-from typing import Optional, Any, Dict, Union, List
+from typing import Optional, Any, Dict, Union, List, AsyncGenerator
+from uuid import UUID
+from asyncio import Queue
 
 import websockets
 
@@ -13,6 +15,7 @@ from surrealdb.request_message.message import RequestMessage
 from surrealdb.request_message.methods import RequestMethod
 from surrealdb.data.types.record_id import RecordID
 from surrealdb.data.types.table import Table
+import asyncio
 
 
 class AsyncWsSurrealConnection(AsyncTemplate):
@@ -150,9 +153,9 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         )
         return await self._send(message, "authenticating")
 
-    async def invalidate(self) -> dict:
+    async def invalidate(self) -> None:
         message = RequestMessage(self.id, RequestMethod.INVALIDATE)
-        return await self._send(message, "invalidating")
+        await self._send(message, "invalidating")
 
     async def let(self, key: str, value: Any) -> None:
         message = RequestMessage(
@@ -277,4 +280,56 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         )
         response = await self._send(message, "insert_relation")
         self.check_response_for_result(response, "insert_relation")
+        return response["result"]
+
+    async def live(self, table: Union[str, Table], diff: bool = False) -> UUID:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.LIVE,
+            table=table,
+        )
+        response = await self._send(message, "live")
+        self.check_response_for_result(response, "live")
+        return response["result"]
+
+    async def subscribe_live(self, query_uuid: Union[str, UUID]) -> AsyncGenerator[dict, None]:
+        result_queue = Queue()
+
+        async def listen_live():
+            """
+            Listen for live updates from the WebSocket and put them into the queue.
+            """
+            try:
+                while True:
+                    response = decode(await self.socket.recv())
+                    if response.get("result", {}).get("id") == query_uuid:
+                        await result_queue.put(response["result"]["result"])
+            except Exception as e:
+                print("Error in live subscription:", e)
+                await result_queue.put({"error": str(e)})
+
+        asyncio.create_task(listen_live())
+
+        while True:
+            result = await result_queue.get()
+            if "error" in result:
+                raise Exception(f"Error in live subscription: {result['error']}")
+            yield result
+
+    async def kill(self, query_uuid: Union[str, UUID]) -> None:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.KILL,
+            uuid=query_uuid
+        )
+        await self._send(message, "kill")
+
+    async def signup(self, vars: Dict) -> str:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.SIGN_UP,
+            data=vars
+        )
+        response = await self._send(message, "signup")
+        self.check_response_for_result(response, "signup")
         return response["result"]

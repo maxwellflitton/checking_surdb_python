@@ -126,7 +126,7 @@ class TestWsCborAdapter(TestCase):
         message = RequestMessage(
             1,
             RequestMethod.LIVE,
-            params=["one", "two", "three"]
+            table="person"
         )
         outcome = message.WS_CBOR_DESCRIPTOR
         self.assertIsInstance(outcome, bytes)

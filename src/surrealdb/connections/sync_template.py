@@ -1,30 +1,30 @@
 from typing import Optional, List, Dict, Any, Union
 from uuid import UUID
 from asyncio import Queue
-from data.types.record_id import RecordID
-from data.types.table import Table
+from surrealdb.data.types.record_id import RecordID
+from surrealdb.data.types.table import Table
 
 
 class SyncTemplate:
 
-    def connect(self, url: str, options: Optional[Dict] = None) -> None:
-        """Connects to a local or remote database endpoint.
-
-        Args:
-            url: The url of the database endpoint to connect to.
-            options: An object with options to initiate the connection to SurrealDB.
-
-        Example:
-            # Connect to a remote endpoint
-            db.connect('https://cloud.surrealdb.com/rpc');
-
-            # Specify a namespace and database pair to use
-            db.connect('https://cloud.surrealdb.com/rpc', {
-                namespace: 'surrealdb',
-                database: 'docs',
-            });
-        """
-        raise NotImplementedError(f"query not implemented for: {self}")
+    # def connect(self, url: str, options: Optional[Dict] = None) -> None:
+    #     """Connects to a local or remote database endpoint.
+    #
+    #     Args:
+    #         url: The url of the database endpoint to connect to.
+    #         options: An object with options to initiate the connection to SurrealDB.
+    #
+    #     Example:
+    #         # Connect to a remote endpoint
+    #         db.connect('https://cloud.surrealdb.com/rpc');
+    #
+    #         # Specify a namespace and database pair to use
+    #         db.connect('https://cloud.surrealdb.com/rpc', {
+    #             namespace: 'surrealdb',
+    #             database: 'docs',
+    #         });
+    #     """
+    #     raise NotImplementedError(f"query not implemented for: {self}")
 
     def close(self) -> None:
         """Closes the persistent connection to the database.
@@ -32,7 +32,7 @@ class SyncTemplate:
         Example:
             db.close()
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"close not implemented for: {self}")
 
     def use(self, namespace: str, database: str) -> None:
         """Switch to a specific namespace and database.
@@ -44,7 +44,7 @@ class SyncTemplate:
         Example:
             db.use('test', 'test')
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"use not implemented for: {self}")
 
     def signup(self, vars: Dict) -> str:
         """Sign this connection up to a specific authentication scope.
@@ -66,7 +66,7 @@ class SyncTemplate:
                 },
             })
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"signup not implemented for: {self}")
 
     def signin(self, vars: Dict) -> str:
         """Sign this connection in to a specific authentication scope.
@@ -81,7 +81,7 @@ class SyncTemplate:
                 password: 'surrealdb',
             })
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"signin not implemented for: {self}")
 
     def invalidate(self) -> None:
         """Invalidate the authentication for the current connection.
@@ -89,7 +89,7 @@ class SyncTemplate:
         Example:
             db.invalidate()
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"invalidate not implemented for: {self}")
 
     def authenticate(self, token: str) -> None:
         """Authenticate the current connection with a JWT token.
@@ -162,7 +162,7 @@ class SyncTemplate:
         Example:
             db.select('person')
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"select not implemented for: {self}")
 
     def create(
         self,
@@ -181,7 +181,7 @@ class SyncTemplate:
         Example:
             db.create
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"create not implemented for: {self}")
 
     def update(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
@@ -211,7 +211,7 @@ class SyncTemplate:
                         },
                 })
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"update not implemented for: {self}")
     
     def upsert(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
@@ -239,7 +239,7 @@ class SyncTemplate:
                         },
                 })
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"upsert not implemented for: {self}")
 
     def merge(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
@@ -271,7 +271,7 @@ class SyncTemplate:
                     })
 
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"merge not implemented for: {self}")
 
     def patch(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
@@ -300,7 +300,7 @@ class SyncTemplate:
                 { 'op': "remove", "path": "/temp" },
             ])
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"patch not implemented for: {self}")
 
     def delete(
         self, thing: Union[str, RecordID, Table]
@@ -320,7 +320,7 @@ class SyncTemplate:
             Delete all records from a table
                 db.delete('person')
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"delete not implemented for: {self}")
 
     def info(self) -> dict:
         """This returns the record of an authenticated record user.
@@ -328,7 +328,7 @@ class SyncTemplate:
         Example:
             db.info()
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"info not implemented for: {self}")
 
     def insert(
         self, table: Union[str, Table], data: Union[List[dict], dict]
@@ -347,7 +347,7 @@ class SyncTemplate:
             db.insert('person', [{ name: 'Tobie'}, { name: 'Jaime'}])
 
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"insert not implemented for: {self}")
 
     def insert_relation(
         self, table: Union[str, Table], data: Union[List[dict], dict]
@@ -366,7 +366,7 @@ class SyncTemplate:
             db.insert_relation('likes', { in: person:1, id: 'object', out: person:2})
 
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"insert_relation not implemented for: {self}")
 
     def live(self, table: Union[str, Table], diff: bool = False) -> UUID:
         """Initiates a live query for a specified table name.
@@ -383,7 +383,7 @@ class SyncTemplate:
         Example:
             db.live('person')
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"live not implemented for: {self}")
 
     def subscribe_live(self, query_uuid: Union[str, UUID]) -> Queue:
         """Live notification returns a queue that receives notification messages from the back end.
@@ -397,7 +397,7 @@ class SyncTemplate:
         Example:
             db.subscribe_live(UUID)
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"subscribe_live not implemented for: {self}")
 
     def kill(self, query_uuid: Union[str, UUID]) -> None:
         """Kills a running live query by it's UUID.
@@ -409,7 +409,7 @@ class SyncTemplate:
             db.kill(UUID)
 
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"kill not implemented for: {self}")
 
 
     def signin(self, vars: Dict) -> str:
@@ -425,3 +425,4 @@ class SyncTemplate:
                 password: 'surrealdb',
             })
         """
+        raise NotImplementedError(f"signin not implemented for: {self}")

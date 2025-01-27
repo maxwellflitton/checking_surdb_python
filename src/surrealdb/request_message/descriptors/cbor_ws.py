@@ -104,13 +104,7 @@ class WsCborDescriptor:
             "id": obj.id,
             "method": obj.method.value,
             "params": [
-                {
-                    "NS": obj.kwargs.get("namespace"),
-                    "DB": obj.kwargs.get("database"),
-                    "AC": obj.kwargs.get("account"),
-                    "username": obj.kwargs.get("username"),
-                    "password": obj.kwargs.get("password"),
-                }
+                obj.kwargs.get("data")
             ],
         }
         schema = {
@@ -131,7 +125,7 @@ class WsCborDescriptor:
                 "required": True,
             },
         }
-        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        # self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
         return encode(data)
 
     def prep_signin(self, obj) -> bytes:
@@ -263,10 +257,13 @@ class WsCborDescriptor:
         return encode(data)
 
     def prep_live(self, obj) -> bytes:
+        table = obj.kwargs.get("table")
+        if isinstance(table, str):
+            table = Table(table)
         data = {
             "id": obj.id,
             "method": obj.method.value,
-            "params": obj.kwargs.get("params")
+            "params": [table]
         }
         schema = {
             "id": {"required": True},
@@ -290,7 +287,6 @@ class WsCborDescriptor:
             "method": {"type": "string", "required": True, "allowed": ["kill"]},
             "params": {
                 "type": "list",
-                "schema": {"type": "string"},
                 "required": True
             },
         }

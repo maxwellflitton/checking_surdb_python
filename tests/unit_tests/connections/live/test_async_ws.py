@@ -1,6 +1,7 @@
 from unittest import main, IsolatedAsyncioTestCase
 
 from surrealdb.connections.async_ws import AsyncWsSurrealConnection
+from uuid import UUID
 
 
 class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
@@ -18,17 +19,14 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         self.connection = AsyncWsSurrealConnection(self.url)
         _ = await self.connection.signin(self.vars_params)
         _ = await self.connection.use(namespace=self.namespace, database=self.database_name)
+        await self.connection.query("DELETE user;")
+        await self.connection.query("CREATE user:tobie SET name = 'Tobie';")
 
-    async def test_invalidate(self):
-        _ = await self.connection.invalidate()
-        with self.assertRaises(Exception) as context:
-            _ = await self.connection.query("CREATE user:jaime SET name = 'Jaime';")
-        self.assertEqual(
-            "IAM error: Not enough permissions" in str(context.exception),
-            True
-        )
+    async def test_query(self):
+        outcome = await self.connection.live("user")
+        self.assertEqual(UUID, type(outcome))
+        await self.connection.query("DELETE user;")
         await self.connection.socket.close()
-
 
 
 if __name__ == "__main__":
