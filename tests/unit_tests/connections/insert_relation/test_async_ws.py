@@ -92,6 +92,9 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
             RecordID('likes', 123),
             outcome[0]["out"]
         )
+        await self.connection.query("DELETE user;")
+        await self.connection.query("DELETE likes;")
+        await self.connection.socket.close()
 
 
 if __name__ == "__main__":
