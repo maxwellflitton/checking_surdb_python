@@ -186,6 +186,10 @@ class AsyncWsSurrealConnection(AsyncTemplate):
             thing: Union[str, RecordID, Table],
             data: Optional[Union[Union[List[dict], dict], dict]] = None,
     ) -> Union[List[dict], dict]:
+        if isinstance(thing, str):
+            if ":" in thing:
+                buffer = thing.split(":")
+                thing = RecordID(table_name=buffer[0], identifier=buffer[1])
         message = RequestMessage(
             self.id,
             RequestMethod.CREATE,
@@ -225,7 +229,7 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         return response["result"]
 
     async def patch(
-            self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
+            self, thing: Union[str, RecordID, Table], data: Optional[List[dict]] = None
     ) -> Union[List[dict], dict]:
         message = RequestMessage(
             self.id,
@@ -237,3 +241,40 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         self.check_response_for_result(response, "patch")
         return response["result"]
 
+    async def delete(
+            self, thing: Union[str, RecordID, Table]
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.DELETE,
+            record_id=thing
+        )
+        response = await self._send(message, "patch")
+        self.check_response_for_result(response, "patch")
+        return response["result"]
+
+    async def insert(
+            self, table: Union[str, Table], data: Union[List[dict], dict]
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.INSERT,
+            collection=table,
+            params=data
+        )
+        response = await self._send(message, "insert")
+        self.check_response_for_result(response, "insert")
+        return response["result"]
+
+    async def insert_relation(
+            self, table: Union[str, Table], data: Union[List[dict], dict]
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.INSERT_RELATION,
+            table=table,
+            params=data
+        )
+        response = await self._send(message, "insert_relation")
+        self.check_response_for_result(response, "insert_relation")
+        return response["result"]

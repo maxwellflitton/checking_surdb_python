@@ -15,6 +15,7 @@ class RequestMethod(Enum):
     QUERY = "query"
     CREATE = "create"
     INSERT = "insert"
+    INSERT_RELATION = "insert_relation"
     PATCH = "patch"
     MERGE = "merge"
     UPDATE = "update"

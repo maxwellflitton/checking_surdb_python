@@ -19,8 +19,9 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         self.namespace = "test_ns"
         self.data = {
             "name": "Jaime",
-            "age": 35,
+            "age": 35
         }
+        self.record_id = RecordID("user", "tobie")
         self.connection = AsyncWsSurrealConnection(self.url)
         _ = await self.connection.signin(self.vars_params)
         _ = await self.connection.use(namespace=self.namespace, database=self.database_name)
@@ -28,100 +29,74 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         await self.connection.query("CREATE user:tobie SET name = 'Tobie';"),
 
     def check_no_change(self, data: dict):
-        record_id = RecordID(table_name="user", identifier="tobie")
-        self.assertEqual(record_id, data["id"])
+        self.assertEqual(self.record_id, data["id"])
         self.assertEqual('Tobie', data["name"])
 
     def check_change(self, data: dict):
-        record_id = RecordID(table_name="user", identifier="tobie")
-        self.assertEqual(record_id, data["id"])
+        self.assertEqual(self.record_id, data["id"])
 
         self.assertEqual('Jaime', data["name"])
         self.assertEqual(35, data["age"])
 
     async def test_update_string(self):
         outcome = await self.connection.update("user:tobie")
-        self.assertEqual(1, len(outcome))
+        self.assertEqual(
+            outcome["id"],
+            self.record_id
+        )
+        self.assertEqual(
+            outcome["name"],
+            "Tobie"
+        )
         outcome = await self.connection.query("SELECT * FROM user;")
         self.check_no_change(outcome[0])
         await self.connection.query("DELETE user;")
         await self.connection.socket.close()
 
     async def test_update_string_with_data(self):
-        outcome = await self.connection.update("user:tobie", self.data)
-        self.assertEqual(1, len(outcome))
+        first_outcome = await self.connection.update("user:tobie", self.data)
+        self.check_change(first_outcome)
         outcome = await self.connection.query("SELECT * FROM user;")
-        print(outcome)
+        self.check_change(outcome[0])
         await self.connection.query("DELETE user;")
         await self.connection.socket.close()
 
     async def test_update_record_id(self):
-        record_id = RecordID("user","tobie")
-        outcome = await self.connection.update(record_id)
-        print(outcome)
-        # self.assertEqual(1, len(outcome))
+        first_outcome = await self.connection.update(self.record_id)
+        self.check_no_change(first_outcome)
         outcome = await self.connection.query("SELECT * FROM user;")
-        print(outcome)
+        self.check_no_change(outcome[0])
         await self.connection.query("DELETE user;")
         await self.connection.socket.close()
 
-    # async def test_update_record_id_with_data(self):
-    #     record_id = RecordID("user", 1)
-    #     outcome = await self.connection.create(record_id, self.data)
-    #     self.assertEqual("user", outcome["id"].table_name)
-    #     self.assertEqual(1, outcome["id"].id)
-    #     self.assertEqual(self.password, outcome["password"])
-    #     self.assertEqual(self.username, outcome["username"])
-    #
-    #     outcome = await self.connection.query("SELECT * FROM user;")
-    #     self.assertEqual(
-    #         len(outcome),
-    #         1
-    #     )
-    #     self.assertEqual("user", outcome[0]["id"].table_name)
-    #     self.assertEqual(self.password, outcome[0]["password"])
-    #     self.assertEqual(self.username, outcome[0]["username"])
-    #
-    #     await self.connection.query("DELETE user;")
-    #     await self.connection.socket.close()
-    #
-    # async def test_update_table(self):
-    #     await self.connection.query("DELETE user;")
-    #
-    #     table = Table("user")
-    #     outcome = await self.connection.create(table)
-    #     self.assertEqual("user", outcome["id"].table_name)
-    #
-    #     self.assertEqual(
-    #         len(await self.connection.query("SELECT * FROM user;")),
-    #         1
-    #     )
-    #
-    #     await self.connection.query("DELETE user;")
-    #     await self.connection.socket.close()
-    #
-    # async def test_update_table_with_data(self):
-    #     await self.connection.query("DELETE user;")
-    #
-    #     table = Table("user")
-    #     outcome = await self.connection.create(table, self.data)
-    #     self.assertEqual("user", outcome["id"].table_name)
-    #     self.assertEqual(self.password, outcome["password"])
-    #     self.assertEqual(self.username, outcome["username"])
-    #
-    #     outcome = await self.connection.query("SELECT * FROM user;")
-    #     self.assertEqual(
-    #         len(outcome),
-    #         1
-    #     )
-    #     self.assertEqual("user", outcome[0]["id"].table_name)
-    #     self.assertEqual(self.password, outcome[0]["password"])
-    #     self.assertEqual(self.username, outcome[0]["username"])
-    #
-    #     await self.connection.query("DELETE user;")
-    #     await self.connection.socket.close()
+    async def test_update_record_id_with_data(self):
+        outcome = await self.connection.update(self.record_id, self.data)
+        self.check_change(outcome)
+        outcome = await self.connection.query("SELECT * FROM user;")
+        self.check_change(
+            outcome[0]
+        )
+        await self.connection.query("DELETE user;")
+        await self.connection.socket.close()
 
+    async def test_update_table(self):
+        table = Table("user")
+        first_outcome = await self.connection.update(table)
+        self.check_no_change(first_outcome[0])
+        outcome = await self.connection.query("SELECT * FROM user;")
+        self.check_no_change(outcome[0])
 
+        await self.connection.query("DELETE user;")
+        await self.connection.socket.close()
+
+    async def test_update_table_with_data(self):
+        table = Table("user")
+        outcome = await self.connection.update(table, self.data)
+        self.check_change(outcome[0])
+        outcome = await self.connection.query("SELECT * FROM user;")
+        self.check_change(outcome[0])
+        await self.connection.query("DELETE user;")
+        await self.connection.socket.close()
 
 
 if __name__ == "__main__":

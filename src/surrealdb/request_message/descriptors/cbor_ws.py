@@ -1,7 +1,10 @@
 from cerberus import Validator
+from cerberus.errors import ValidationError
 
 from surrealdb.data.cbor import encode
 from surrealdb.request_message.methods import RequestMethod
+from surrealdb.data.utils import process_thing
+from surrealdb.data.types.table import Table
 
 
 class WsCborDescriptor:
@@ -42,6 +45,10 @@ class WsCborDescriptor:
             return self.prep_update(obj)
         elif obj.method == RequestMethod.MERGE:
             return self.prep_merge(obj)
+        elif obj.method == RequestMethod.DELETE:
+            return self.prep_delete(obj)
+        elif obj.method == RequestMethod.INSERT_RELATION:
+            return self.prep_insert_relation(obj)
 
         raise ValueError(f"Invalid method for Cbor WS encoding: {obj.method}")
 
@@ -317,7 +324,7 @@ class WsCborDescriptor:
             "id": obj.id,
             "method": obj.method.value,
             "params": [
-                obj.kwargs.get("collection"),
+                process_thing(obj.kwargs.get("collection")),
                 obj.kwargs.get("params")
             ]
         }
@@ -339,10 +346,12 @@ class WsCborDescriptor:
             "id": obj.id,
             "method": obj.method.value,
             "params": [
-                obj.kwargs.get("collection"),
+                process_thing(obj.kwargs.get("collection")),
                 obj.kwargs.get("params")
             ]
         }
+        if obj.kwargs.get("params") is None:
+            raise ValidationError("parameters cannot be None for a patch method")
         schema = {
             "id": {"required": True},
             "method": {"type": "string", "required": True, "allowed": ["patch"]},
@@ -377,7 +386,7 @@ class WsCborDescriptor:
         data = {
             "id": obj.id,
             "method": obj.method.value,
-            "params": [obj.kwargs.get("collection")]
+            "params": [process_thing(obj.kwargs.get("collection"))]
         }
         if obj.kwargs.get("data"):
             data["params"].append(obj.kwargs.get("data"))
@@ -400,7 +409,7 @@ class WsCborDescriptor:
             "id": obj.id,
             "method": obj.method.value,
             "params": [
-                obj.kwargs.get("record_id"),
+                process_thing(obj.kwargs.get("record_id")),
                 obj.kwargs.get("data", dict())
             ]
         }
@@ -422,7 +431,7 @@ class WsCborDescriptor:
             "id": obj.id,
             "method": obj.method.value,
             "params": [
-                obj.kwargs.get("record_id"),
+                process_thing(obj.kwargs.get("record_id")),
                 obj.kwargs.get("data", dict())
             ]
         }
@@ -432,6 +441,50 @@ class WsCborDescriptor:
             "params": {
                 "type": "list",
                 "minlength": 1,
+                "maxlength": 2,
+                "required": True
+            }
+        }
+        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        return encode(data)
+
+    def prep_delete(self, obj) -> bytes:
+        data = {
+            "id": obj.id,
+            "method": obj.method.value,
+            "params": [process_thing(obj.kwargs.get("record_id"))]
+        }
+        schema = {
+            "id": {"required": True},
+            "method": {"type": "string", "required": True, "allowed": ["delete"]},
+            "params": {
+                "type": "list",
+                "minlength": 1,
+                "maxlength": 1,
+                "required": True
+            }
+        }
+        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        return encode(data)
+
+    def prep_insert_relation(self, obj) -> bytes:
+        data = {
+            "id": obj.id,
+            "method": obj.method.value,
+            "params": [
+                Table(obj.kwargs.get("table")),
+            ]
+        }
+        params = obj.kwargs.get("params", [])
+        # for i in params:
+        data["params"].append(params)
+
+        schema = {
+            "id": {"required": True},
+            "method": {"type": "string", "required": True, "allowed": ["insert_relation"]},
+            "params": {
+                "type": "list",
+                "minlength": 2,
                 "maxlength": 2,
                 "required": True
             }

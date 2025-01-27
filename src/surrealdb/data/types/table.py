@@ -10,7 +10,7 @@ class Table:
         table_name: The name of the table.
     """
 
-    def __init__(self, table_name: str):
+    def __init__(self, table_name: str) -> None:
         """
         Initializes a Table object with a specific table name.
 

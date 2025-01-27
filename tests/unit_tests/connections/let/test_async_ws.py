@@ -18,9 +18,9 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         self.connection = AsyncWsSurrealConnection(self.url)
         _ = await self.connection.signin(self.vars_params)
         _ = await self.connection.use(namespace=self.namespace, database=self.database_name)
+        await self.connection.query("DELETE person;")
 
     async def test_let(self):
-        await self.connection.query("DELETE person;")
         outcome = await self.connection.let('name', {
             "first": 'Tobie',
             "last": 'Morgan Hitchcock',

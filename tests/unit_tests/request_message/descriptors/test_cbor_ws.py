@@ -218,6 +218,15 @@ class TestWsCborAdapter(TestCase):
         outcome = message.WS_CBOR_DESCRIPTOR
         self.assertIsInstance(outcome, bytes)
 
+    def test_delete_pass(self):
+        message = RequestMessage(
+            1,
+            RequestMethod.DELETE,
+            record_id="test",
+        )
+        outcome = message.WS_CBOR_DESCRIPTOR
+        self.assertIsInstance(outcome, bytes)
+
 
 if __name__ == "__main__":
     main()

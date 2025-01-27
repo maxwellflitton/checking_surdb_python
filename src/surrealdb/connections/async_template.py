@@ -7,11 +7,22 @@ from surrealdb.data.types.table import Table
 
 class AsyncTemplate:
 
-    async def connect(self) -> None:
+    async def connect(self, url: str, options: Optional[Dict] = None) -> None:
         """Connects to a local or remote database endpoint.
-        
+
+        Args:
+            url: The url of the database endpoint to connect to.
+            options: An object with options to initiate the connection to SurrealDB.
+
         Example:
-            await db.connect()
+            # Connect to a remote endpoint
+            await db.connect('https://cloud.surrealdb.com/rpc');
+
+            # Specify a namespace and database pair to use
+            await db.connect('https://cloud.surrealdb.com/rpc', {
+                namespace: 'surrealdb',
+                database: 'docs',
+            });
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
@@ -47,8 +58,8 @@ class AsyncTemplate:
                 namespace: 'surrealdb',
                 database: 'docs',
                 access: 'user',
-            
-                Also pass any properties required by the scope definition
+
+                # Also pass any properties required by the scope definition
                 variables: {
                     email: 'info@surrealdb.com',
                     pass: '123456',
@@ -99,13 +110,13 @@ class AsyncTemplate:
             value: Assigns the value to the variable name.
 
         Example:
-            Assign the variable on the connection
+            # Assign the variable on the connection
             await db.let('name', {
                 first: 'Tobie',
                 last: 'Morgan Hitchcock',
             })
 
-            Use the variable in a subsequent query
+            # Use the variable in a subsequent query
             await db.query('CREATE person SET name = $name')
         """
         raise NotImplementedError(f"let not implemented for: {self}")
@@ -168,17 +179,7 @@ class AsyncTemplate:
             data (optional): The document / record data to insert.
 
         Example:
-            Create a record with a random ID
-            await db.create('person')
-
-            Create a record with a specific ID
-            person = await db.create(RecordID('person', 'tobie'), {
-                name: 'Tobie',
-                settings: {
-                    active: true,
-                    marketing: true,
-                }
-            })
+            db.create
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 
@@ -201,7 +202,7 @@ class AsyncTemplate:
 
         Example:
             Update all records in a table
-                person = await db.update('person', {name: 'John Doe'})
+                person = await db.update('person')
 
             Update a record with a specific ID
                 record = await db.update('person:tobie', {

@@ -24,9 +24,9 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         self.connection = AsyncWsSurrealConnection(self.url)
         _ = await self.connection.signin(self.vars_params)
         _ = await self.connection.use(namespace=self.namespace, database=self.database_name)
+        await self.connection.query("DELETE user;")
 
     async def test_create_string(self):
-        await self.connection.query("DELETE user;")
         outcome = await self.connection.create("user")
         self.assertEqual("user", outcome["id"].table_name)
 
@@ -38,8 +38,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         await self.connection.socket.close()
 
     async def test_create_string_with_data(self):
-        await self.connection.query("DELETE user;")
-
         outcome = await self.connection.create("user", self.data)
         self.assertEqual("user", outcome["id"].table_name)
         self.assertEqual(self.password, outcome["password"])
@@ -57,9 +55,27 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         await self.connection.query("DELETE user;")
         await self.connection.socket.close()
 
-    async def test_create_record_id(self):
-        await self.connection.query("DELETE user;")
+    async def test_create_string_with_data_and_id(self):
+        first_outcome = await self.connection.create("user:tobie", self.data)
+        self.assertEqual("user", first_outcome["id"].table_name)
+        self.assertEqual("tobie", first_outcome["id"].id)
+        self.assertEqual(self.password, first_outcome["password"])
+        self.assertEqual(self.username, first_outcome["username"])
 
+        outcome = await self.connection.query("SELECT * FROM user;")
+        self.assertEqual(
+            len(outcome),
+            1
+        )
+        self.assertEqual("user", outcome[0]["id"].table_name)
+        self.assertEqual("tobie", outcome[0]["id"].id)
+        self.assertEqual(self.password, outcome[0]["password"])
+        self.assertEqual(self.username, outcome[0]["username"])
+
+        await self.connection.query("DELETE user;")
+        await self.connection.socket.close()
+
+    async def test_create_record_id(self):
         record_id = RecordID("user",1)
         outcome = await self.connection.create(record_id)
         self.assertEqual("user", outcome["id"].table_name)
@@ -74,8 +90,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         await self.connection.socket.close()
 
     async def test_create_record_id_with_data(self):
-        await self.connection.query("DELETE user;")
-
         record_id = RecordID("user", 1)
         outcome = await self.connection.create(record_id, self.data)
         self.assertEqual("user", outcome["id"].table_name)
@@ -96,8 +110,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         await self.connection.socket.close()
 
     async def test_create_table(self):
-        await self.connection.query("DELETE user;")
-
         table = Table("user")
         outcome = await self.connection.create(table)
         self.assertEqual("user", outcome["id"].table_name)
@@ -111,8 +123,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         await self.connection.socket.close()
 
     async def test_create_table_with_data(self):
-        await self.connection.query("DELETE user;")
-
         table = Table("user")
         outcome = await self.connection.create(table, self.data)
         self.assertEqual("user", outcome["id"].table_name)
