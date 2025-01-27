@@ -1,24 +1,25 @@
 """
 A basic async connection to a SurrealDB instance.
 """
+import asyncio
 import uuid
+from asyncio import Queue
 from typing import Optional, Any, Dict, Union, List, AsyncGenerator
 from uuid import UUID
-from asyncio import Queue
 
 import websockets
 
 from surrealdb.connections.async_template import AsyncTemplate
 from surrealdb.connections.url import Url
+from surrealdb.connections.utils_mixin import UtilsMixin
 from surrealdb.data.cbor import decode
-from surrealdb.request_message.message import RequestMessage
-from surrealdb.request_message.methods import RequestMethod
 from surrealdb.data.types.record_id import RecordID
 from surrealdb.data.types.table import Table
-import asyncio
+from surrealdb.request_message.message import RequestMessage
+from surrealdb.request_message.methods import RequestMethod
 
 
-class AsyncWsSurrealConnection(AsyncTemplate):
+class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
     """
     A single async connection to a SurrealDB instance. To be used once and discarded.
 
@@ -60,16 +61,6 @@ class AsyncWsSurrealConnection(AsyncTemplate):
         self.id: str = str(uuid.uuid4())
         self.token: Optional[str] = None
         self.socket = None
-
-    @staticmethod
-    def check_response_for_error(response: dict, process: str) -> None:
-        if response.get("error") is not None:
-            raise Exception(f"error {process}: {response.get('error')}")
-
-    @staticmethod
-    def check_response_for_result(response: dict, process: str) -> None:
-        if response.get("result") is None:
-            raise Exception(f"no result {process}: {response}")
 
     async def _send(self, message: RequestMessage, process: str) -> dict:
         if self.socket is None:

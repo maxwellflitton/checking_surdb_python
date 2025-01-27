@@ -2,22 +2,23 @@
 A basic blocking connection to a SurrealDB instance.
 """
 import uuid
-from typing import Optional, Any, Dict, Union, List
+from typing import Optional, Any, Dict, Union, List, Generator
 from uuid import UUID
 
-import websockets.sync.client as ws_sync
 import websockets
+import websockets.sync.client as ws_sync
 
 from surrealdb.connections.sync_template import SyncTemplate
 from surrealdb.connections.url import Url
+from surrealdb.connections.utils_mixin import UtilsMixin
 from surrealdb.data.cbor import decode
-from surrealdb.request_message.message import RequestMessage
-from surrealdb.request_message.methods import RequestMethod
 from surrealdb.data.types.record_id import RecordID
 from surrealdb.data.types.table import Table
+from surrealdb.request_message.message import RequestMessage
+from surrealdb.request_message.methods import RequestMethod
 
 
-class BlockingWsSurrealConnection(SyncTemplate):
+class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
     """
     A single blocking connection to a SurrealDB instance. To be used once and discarded.
 
@@ -50,16 +51,6 @@ class BlockingWsSurrealConnection(SyncTemplate):
         self.id: str = str(uuid.uuid4())
         self.token: Optional[str] = None
         self.socket = None
-
-    @staticmethod
-    def check_response_for_error(response: dict, process: str) -> None:
-        if response.get("error") is not None:
-            raise Exception(f"Error {process}: {response.get('error')}")
-
-    @staticmethod
-    def check_response_for_result(response: dict, process: str) -> None:
-        if response.get("result") is None:
-            raise Exception(f"No result {process}: {response}")
 
     def _send(self, message: RequestMessage, process: str) -> dict:
         if self.socket is None:
@@ -230,4 +221,72 @@ class BlockingWsSurrealConnection(SyncTemplate):
         )
         response = self._send(message, "insert")
         self.check_response_for_result(response, "insert")
+        return response["result"]
+
+    def merge(
+            self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.MERGE,
+            record_id=thing,
+            data=data
+        )
+        response = self._send(message, "merge")
+        self.check_response_for_result(response, "merge")
+        return response["result"]
+
+    def patch(
+            self, thing: Union[str, RecordID, Table], data: Optional[List[dict]] = None
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.PATCH,
+            collection=thing,
+            params=data
+        )
+        response = self._send(message, "patch")
+        self.check_response_for_result(response, "patch")
+        return response["result"]
+
+    def subscribe_live(self, query_uuid: Union[str, UUID]) -> Generator[dict, None, None]:
+        """
+        Subscribe to live updates for a given query UUID.
+
+        Args:
+            query_uuid (Union[str, UUID]): The query UUID to subscribe to.
+
+        Yields:
+            dict: The results of live updates.
+        """
+        try:
+            while True:
+                try:
+                    # Receive a message from the WebSocket
+                    response = decode(self.socket.recv())
+
+                    # Check if the response matches the query UUID
+                    if response.get("result", {}).get("id") == query_uuid:
+                        yield response["result"]["result"]
+                except Exception as e:
+                    # Handle WebSocket or decoding errors
+                    print("Error in live subscription:", e)
+                    yield {"error": str(e)}
+        except GeneratorExit:
+            # Handle generator exit gracefully if needed
+            pass
+
+    def update(
+            self,
+            thing: Union[str, RecordID, Table],
+            data: Optional[Dict] = None
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.UPDATE,
+            record_id=thing,
+            data=data
+        )
+        response = self._send(message, "update")
+        self.check_response_for_result(response, "update")
         return response["result"]

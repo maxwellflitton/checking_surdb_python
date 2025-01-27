@@ -23,6 +23,7 @@ class RequestMethod(Enum):
     DELETE = "delete"
     LIVE = "live"
     KILL = "kill"
+    POST = "post"
 
     @staticmethod
     def from_string(method: str) -> "RequestMethod":
