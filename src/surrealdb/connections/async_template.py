@@ -89,7 +89,7 @@ class AsyncTemplate:
         Example:
             await db.invalidate()
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"invalidate not implemented for: {self}")
 
     async def authenticate(self, token: str) -> None:
         """Authenticate the current connection with a JWT token.
@@ -181,7 +181,7 @@ class AsyncTemplate:
         Example:
             db.create
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"create not implemented for: {self}")
 
     async def update(
         self,
@@ -241,7 +241,7 @@ class AsyncTemplate:
                         },
                 })
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"upsert not implemented for: {self}")
 
     async def merge(
         self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
@@ -322,7 +322,7 @@ class AsyncTemplate:
             Delete all records from a table
                 await db.delete('person')
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"delete not implemented for: {self}")
 
     def info(self) -> dict:
         """This returns the record of an authenticated record user.

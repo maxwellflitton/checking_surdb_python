@@ -243,8 +243,8 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
             RequestMethod.DELETE,
             record_id=thing
         )
-        response = await self._send(message, "patch")
-        self.check_response_for_result(response, "patch")
+        response = await self._send(message, "delete")
+        self.check_response_for_result(response, "delete")
         return response["result"]
 
     async def insert(
