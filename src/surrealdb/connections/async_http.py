@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, Union, List
 
 import aiohttp
 
@@ -7,11 +7,10 @@ from surrealdb.connections.async_template import AsyncTemplate
 from surrealdb.connections.url import Url
 from surrealdb.connections.utils_mixin import UtilsMixin
 from surrealdb.data.cbor import decode
-from surrealdb.request_message.message import RequestMessage
-from surrealdb.request_message.methods import RequestMethod
-from typing import Optional, Any, Dict, Union, List
 from surrealdb.data.types.record_id import RecordID
 from surrealdb.data.types.table import Table
+from surrealdb.request_message.message import RequestMessage
+from surrealdb.request_message.methods import RequestMethod
 
 
 class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
@@ -262,4 +261,41 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         )
         response = await self._send(message, "select")
         self.check_response_for_result(response, "select")
+        return response["result"]
+
+    async def update(
+            self,
+            thing: Union[str, RecordID, Table],
+            data: Optional[Dict] = None
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.UPDATE,
+            record_id=thing,
+            data=data
+        )
+        response = await self._send(message, "update")
+        self.check_response_for_result(response, "update")
+        return response["result"]
+
+    async def version(self) -> str:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.VERSION
+        )
+        response = await self._send(message, "getting database version")
+        self.check_response_for_result(response, "getting database version")
+        return response["result"]
+
+    async def upsert(
+            self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.UPSERT,
+            record_id=thing,
+            data=data
+        )
+        response = await self._send(message, "upsert")
+        self.check_response_for_result(response, "upsert")
         return response["result"]

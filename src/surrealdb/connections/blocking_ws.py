@@ -290,3 +290,18 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         response = self._send(message, "update")
         self.check_response_for_result(response, "update")
         return response["result"]
+
+    def upsert(
+            self,
+            thing: Union[str, RecordID, Table],
+            data: Optional[Dict] = None
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.UPSERT,
+            record_id=thing,
+            data=data
+        )
+        response = self._send(message, "upsert")
+        self.check_response_for_result(response, "upsert")
+        return response["result"]

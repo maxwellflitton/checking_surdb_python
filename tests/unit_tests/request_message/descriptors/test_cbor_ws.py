@@ -208,6 +208,16 @@ class TestWsCborAdapter(TestCase):
         outcome = message.WS_CBOR_DESCRIPTOR
         self.assertIsInstance(outcome, bytes)
 
+    def test_upsert_pass(self):
+        message = RequestMessage(
+            1,
+            RequestMethod.UPSERT,
+            record_id="test",
+            data={"table": "table"}
+        )
+        outcome = message.WS_CBOR_DESCRIPTOR
+        self.assertIsInstance(outcome, bytes)
+
     def test_merge_pass(self):
         message = RequestMessage(
             1,

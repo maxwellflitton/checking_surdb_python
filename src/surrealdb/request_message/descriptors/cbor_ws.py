@@ -49,6 +49,8 @@ class WsCborDescriptor:
             return self.prep_delete(obj)
         elif obj.method == RequestMethod.INSERT_RELATION:
             return self.prep_insert_relation(obj)
+        elif obj.method == RequestMethod.UPSERT:
+            return self.prep_upsert(obj)
 
         raise ValueError(f"Invalid method for Cbor WS encoding: {obj.method}")
 
@@ -481,6 +483,28 @@ class WsCborDescriptor:
             "params": {
                 "type": "list",
                 "minlength": 2,
+                "maxlength": 2,
+                "required": True
+            }
+        }
+        self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        return encode(data)
+
+    def prep_upsert(self, obj) -> bytes:
+        data = {
+            "id": obj.id,
+            "method": obj.method.value,
+            "params": [
+                process_thing(obj.kwargs.get("record_id")),
+                obj.kwargs.get("data", dict())
+            ]
+        }
+        schema = {
+            "id": {"required": True},
+            "method": {"type": "string", "required": True, "allowed": ["upsert"]},
+            "params": {
+                "type": "list",
+                "minlength": 1,
                 "maxlength": 2,
                 "required": True
             }

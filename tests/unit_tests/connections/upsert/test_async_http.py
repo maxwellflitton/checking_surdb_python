@@ -1,14 +1,14 @@
 from unittest import main, IsolatedAsyncioTestCase
 
-from surrealdb.connections.async_ws import AsyncWsSurrealConnection
+from surrealdb.connections.async_http import AsyncHttpSurrealConnection
 from surrealdb.data.types.record_id import RecordID
 from surrealdb.data.types.table import Table
 
 
-class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
+class TestAsyncHttpSurrealConnection(IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
-        self.url = "ws://localhost:8000"
+        self.url = "http://localhost:8000"
         self.password = "root"
         self.username = "root"
         self.vars_params = {
@@ -22,7 +22,7 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
             "age": 35
         }
         self.record_id = RecordID("user", "tobie")
-        self.connection = AsyncWsSurrealConnection(self.url)
+        self.connection = AsyncHttpSurrealConnection(self.url)
         _ = await self.connection.signin(self.vars_params)
         _ = await self.connection.use(namespace=self.namespace, database=self.database_name)
         await self.connection.query("DELETE user;")
@@ -51,7 +51,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         outcome = await self.connection.query("SELECT * FROM user;")
         self.check_no_change(outcome[0])
         await self.connection.query("DELETE user;")
-        await self.connection.socket.close()
 
     async def test_upsert_string_with_data(self):
         first_outcome = await self.connection.upsert("user:tobie", self.data)
@@ -59,7 +58,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         outcome = await self.connection.query("SELECT * FROM user;")
         self.check_change(outcome[0])
         await self.connection.query("DELETE user;")
-        await self.connection.socket.close()
 
     async def test_upsert_record_id(self):
         first_outcome = await self.connection.upsert(self.record_id)
@@ -67,7 +65,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         outcome = await self.connection.query("SELECT * FROM user;")
         self.check_no_change(outcome[0])
         await self.connection.query("DELETE user;")
-        await self.connection.socket.close()
 
     async def test_upsert_record_id_with_data(self):
         outcome = await self.connection.upsert(self.record_id, self.data)
@@ -77,7 +74,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
             outcome[0]
         )
         await self.connection.query("DELETE user;")
-        await self.connection.socket.close()
 
     async def test_upsert_table(self):
         table = Table("user")
@@ -87,7 +83,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         self.check_no_change(outcome[0])
 
         await self.connection.query("DELETE user;")
-        await self.connection.socket.close()
 
     async def test_upsert_table_with_data(self):
         table = Table("user")
@@ -96,7 +91,6 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         outcome = await self.connection.query("SELECT * FROM user;")
         self.check_change(outcome[0])
         await self.connection.query("DELETE user;")
-        await self.connection.socket.close()
 
 
 if __name__ == "__main__":
