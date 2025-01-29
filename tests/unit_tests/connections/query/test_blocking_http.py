@@ -1,14 +1,14 @@
-from unittest import main, IsolatedAsyncioTestCase
+from unittest import main, TestCase
 
-from surrealdb.connections.async_ws import AsyncWsSurrealConnection
+from surrealdb.connections.blocking_http import BlockingHttpSurrealConnection
 from surrealdb.data.types.record_id import RecordID
 
 
-class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
+class TestBlockingHttpSurrealConnection(TestCase):
 
-    async def asyncSetUp(self):
+    def setUp(self):
         self.queries = ["DELETE user;"]
-        self.url = "ws://localhost:8000"
+        self.url = "http://localhost:8000"
         self.password = "root"
         self.username = "root"
         self.vars_params = {
@@ -17,14 +17,14 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         }
         self.database_name = "test_db"
         self.namespace = "test_ns"
-        self.connection = AsyncWsSurrealConnection(self.url)
-        _ = await self.connection.signin(self.vars_params)
-        _ = await self.connection.use(namespace=self.namespace, database=self.database_name)
+        self.connection = BlockingHttpSurrealConnection(self.url)
+        _ = self.connection.signin(self.vars_params)
+        _ = self.connection.use(namespace=self.namespace, database=self.database_name)
 
-    async def test_query(self):
-        await self.connection.query("DELETE user;")
+    def test_query(self):
+        self.connection.query("DELETE user;")
         self.assertEqual(
-            await self.connection.query("CREATE user:tobie SET name = 'Tobie';"),
+            self.connection.query("CREATE user:tobie SET name = 'Tobie';"),
             [
                 {
                     "id": RecordID(table_name="user", identifier="tobie"),
@@ -33,7 +33,7 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
             ]
         )
         self.assertEqual(
-            await self.connection.query("CREATE user:jaime SET name = 'Jaime';"),
+            self.connection.query("CREATE user:jaime SET name = 'Jaime';"),
             [
                 {
                     "id": RecordID(table_name="user", identifier="jaime"),
@@ -42,7 +42,7 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
             ]
         )
         self.assertEqual(
-            await self.connection.query("SELECT * FROM user;"),
+            self.connection.query("SELECT * FROM user;"),
             [
                 {
                     "id": RecordID(table_name="user", identifier="jaime"),
@@ -54,8 +54,7 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
                 }
             ]
         )
-        await self.connection.query("DELETE user;")
-        await self.connection.socket.close()
+        self.connection.query("DELETE user;")
 
 
 if __name__ == "__main__":

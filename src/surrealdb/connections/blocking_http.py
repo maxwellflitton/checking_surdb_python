@@ -69,9 +69,10 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
             RequestMethod.SIGN_IN,
             username=vars.get("username"),
             password=vars.get("password"),
-            account=vars.get("account"),
+            access=vars.get("access"),
             database=vars.get("database"),
             namespace=vars.get("namespace"),
+            variables=vars.get("variables"),
         )
         response = self._send(message, "signing in")
         self.check_response_for_result(response, "signing in")
@@ -142,7 +143,9 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
             self.id,
             RequestMethod.INFO
         )
-        return self._send(message, "getting database information")
+        response = self._send(message, "getting database information")
+        self.check_response_for_result(response, "getting database information")
+        return response["result"]
 
     def insert(
             self, table: Union[str, Table], data: Union[List[dict], dict]
@@ -253,3 +256,30 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
         response = self._send(message, "upsert")
         self.check_response_for_result(response, "upsert")
         return response["result"]
+
+    def signup(self, vars: Dict) -> str:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.SIGN_UP,
+            data=vars
+        )
+        response = self._send(message, "signup")
+        self.check_response_for_result(response, "signup")
+        self.token = response["result"]
+        return response["result"]
+
+    def __enter__(self) -> "BlockingHttpSurrealConnection":
+        """
+        Synchronous context manager entry.
+        Initializes a session for HTTP requests.
+        """
+        self.session = requests.Session()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        """
+        Synchronous context manager exit.
+        Closes the HTTP session upon exiting the context.
+        """
+        if hasattr(self, "session"):
+            self.session.close()

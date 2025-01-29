@@ -2,10 +2,10 @@ from unittest import TestCase, main, IsolatedAsyncioTestCase
 
 from surrealdb.request_message.message import RequestMessage
 from surrealdb.request_message.methods import RequestMethod
-from surrealdb.connections.async_ws import AsyncWsSurrealConnection
+from surrealdb.connections.async_http import AsyncHttpSurrealConnection
 
 
-class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
+class TestAsyncHttpSurrealConnection(IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
         self.url = "ws://localhost:8000"
@@ -17,7 +17,7 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         }
         self.database_name = "test_db"
         self.namespace = "test_ns"
-        self.connection = AsyncWsSurrealConnection(self.url)
+        self.connection = AsyncHttpSurrealConnection(self.url)
         _ = await self.connection.signin(self.vars_params)
         _ = await self.connection.use(namespace=self.namespace, database=self.database_name)
         _ = await self.connection.query("DELETE user;")
@@ -47,7 +47,7 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
                 "name": "test"
             }
         }
-        connection = AsyncWsSurrealConnection(self.url)
+        connection = AsyncHttpSurrealConnection(self.url)
         # for below if client is HTTP then persist and attach to all headers
         _ = await connection.signup(vars)
 

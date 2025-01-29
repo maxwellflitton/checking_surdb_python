@@ -73,9 +73,10 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
             RequestMethod.SIGN_IN,
             username=vars.get("username"),
             password=vars.get("password"),
-            account=vars.get("account"),
+            access=vars.get("access"),
             database=vars.get("database"),
             namespace=vars.get("namespace"),
+            variables=vars.get("variables"),
         )
         response = self._send(message, "signing in")
         self.check_response_for_result(response, "signing in")
@@ -111,7 +112,9 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
             self.id,
             RequestMethod.INFO
         )
-        return self._send(message, "getting database information")
+        response = self._send(message, "getting database information")
+        self.check_response_for_result(response, "getting database information")
+        return response["result"]
 
     def version(self) -> str:
         message = RequestMessage(
@@ -305,3 +308,34 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         response = self._send(message, "upsert")
         self.check_response_for_result(response, "upsert")
         return response["result"]
+
+    def signup(self, vars: Dict) -> str:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.SIGN_UP,
+            data=vars
+        )
+        response = self._send(message, "signup")
+        self.check_response_for_result(response, "signup")
+        return response["result"]
+
+    def __enter__(self) -> "BlockingWsSurrealConnection":
+        """
+        Synchronous context manager entry.
+        Initializes a websocket connection and returns the connection instance.
+        """
+        self.socket = ws_sync.connect(
+            self.raw_url,
+            max_size=self.max_size,
+            subprotocols=[websockets.Subprotocol("cbor")]
+        )
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        """
+        Synchronous context manager exit.
+        Closes the websocket connection upon exiting the context.
+        """
+        if self.socket is not None:
+            self.socket.close()
+

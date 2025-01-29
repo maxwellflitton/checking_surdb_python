@@ -115,9 +115,10 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
             RequestMethod.SIGN_IN,
             username=vars.get("username"),
             password=vars.get("password"),
-            account=vars.get("account"),
+            access=vars.get("access"),
             database=vars.get("database"),
             namespace=vars.get("namespace"),
+            variables=vars.get("variables"),
         )
         response = await self._send(message, "signing in")
         self.check_response_for_result(response, "signing in")
@@ -183,12 +184,14 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         self.check_response_for_result(response, "delete")
         return response["result"]
 
-    async def info(self):
+    async def info(self) -> dict:
         message = RequestMessage(
             self.id,
             RequestMethod.INFO
         )
-        return await self._send(message, "getting database information")
+        response = await self._send(message, "getting database information")
+        self.check_response_for_result(response, "getting database information")
+        return response["result"]
 
     async def insert(
             self, table: Union[str, Table], data: Union[List[dict], dict]
@@ -299,3 +302,30 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         response = await self._send(message, "upsert")
         self.check_response_for_result(response, "upsert")
         return response["result"]
+
+    async def signup(self, vars: Dict) -> str:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.SIGN_UP,
+            data=vars
+        )
+        response = await self._send(message, "signup")
+        self.check_response_for_result(response, "signup")
+        self.token = response["result"]
+        return response["result"]
+
+    async def __aenter__(self) -> "AsyncHttpSurrealConnection":
+        """
+        Asynchronous context manager entry.
+        Initializes an aiohttp session and returns the connection instance.
+        """
+        self._session = aiohttp.ClientSession()
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """
+        Asynchronous context manager exit.
+        Closes the aiohttp session upon exiting the context.
+        """
+        if hasattr(self, "_session"):
+            await self._session.close()

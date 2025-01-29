@@ -102,13 +102,20 @@ class WsCborDescriptor:
         return encode(data)
 
     def prep_signup(self, obj) -> bytes:
+        passed_params = obj.kwargs.get("data")
         data = {
             "id": obj.id,
             "method": obj.method.value,
             "params": [
-                obj.kwargs.get("data")
+                {
+                    "NS": passed_params.get("namespace"),
+                    "DB": passed_params.get("database"),
+                    "AC": passed_params.get("access"),
+                }
             ],
         }
+        for key, value in passed_params["variables"].items():
+            data["params"][0][key] = value
         schema = {
             "id": {"required": True},
             "method": {"type": "string", "required": True},  # "method" must be a string
@@ -131,6 +138,15 @@ class WsCborDescriptor:
         return encode(data)
 
     def prep_signin(self, obj) -> bytes:
+        """
+        - user+pass -> done
+        - user+pass+ac -> done
+        - user+pass+ns -> done
+        - user+pass+ns+ac -> done
+        - user+pass+ns+db
+        - user+pass+ns+db+ac
+        - ns+db+ac+any other vars
+        """
         if obj.kwargs.get("namespace") is None:
             # root user signing in
             data = {
@@ -143,47 +159,92 @@ class WsCborDescriptor:
                     }
                 ]
             }
-        else:
+        elif obj.kwargs.get("namespace") is None and obj.kwargs.get("access") is not None:
             data = {
                 "id": obj.id,
                 "method": obj.method.value,
                 "params": [
                     {
-                        "NS": obj.kwargs.get("namespace"),
-                        "DB": obj.kwargs.get("database"),
-                        "AC": obj.kwargs.get("account"),
-                        "username": obj.kwargs.get("username"),
-                        "password": obj.kwargs.get("password")
+                        "ac": obj.kwargs.get("access"),
+                        "user": obj.kwargs.get("username"),
+                        "pass": obj.kwargs.get("password")
                     }
                 ]
             }
-        # TODO => schema validation disabled for signin because signin method accepts
-        #
-        # schema = {
-        #     "id": {"required": True},
-        #     "method": {"type": "string", "required": True},
-        #     "params": {
-        #         "type": "list",
-        #         "schema": {
-        #             "type": "dict",
-        #             "oneof_schema": [
-        #                 {  # First structure for "signin" with "user" and "pass"
-        #                     "user": {"type": "string", "required": True},
-        #                     "pass": {"type": "string", "required": True},
-        #                 },
-        #                 {  # Second structure with "NS", "DB", "AC", "username", and "password"
-        #                     "NS": {"type": "string", "required": True},
-        #                     "DB": {"type": "string", "required": True},
-        #                     "AC": {"type": "string", "required": True},
-        #                     "username": {"type": "string", "required": True},
-        #                     "password": {"type": "string", "required": True},
-        #                 },
-        #             ],
-        #         },
-        #         "required": True,
-        #     },
-        # }
-        # self._raise_invalid_schema(data=data, schema=schema, method=obj.method.value)
+        elif obj.kwargs.get("database") is None and obj.kwargs.get("access") is None:
+            # namespace signin
+            data = {
+                "id": obj.id,
+                "method": obj.method.value,
+                "params": [
+                    {
+                        "ns": obj.kwargs.get("namespace"),
+                        "user": obj.kwargs.get("username"),
+                        "pass": obj.kwargs.get("password")
+                    }
+                ]
+            }
+        elif obj.kwargs.get("database") is None and obj.kwargs.get("access") is not None:
+            # access signin
+            data = {
+                "id": obj.id,
+                "method": obj.method.value,
+                "params": [
+                    {
+                        "ns": obj.kwargs.get("namespace"),
+                        "ac": obj.kwargs.get("access"),
+                        "user": obj.kwargs.get("username"),
+                        "pass": obj.kwargs.get("password")
+                    }
+                ]
+            }
+        elif obj.kwargs.get("database") is not None and obj.kwargs.get("namespace") is not None and obj.kwargs.get("access") is not None and obj.kwargs.get("variables") is None:
+            data = {
+                "id": obj.id,
+                "method": obj.method.value,
+                "params": [
+                    {
+                        "ns": obj.kwargs.get("namespace"),
+                        "db": obj.kwargs.get("database"),
+                        "ac": obj.kwargs.get("access"),
+                        "user": obj.kwargs.get("username"),
+                        "pass": obj.kwargs.get("password")
+                    }
+                ]
+            }
+
+        elif obj.kwargs.get("username") is None and obj.kwargs.get("password") is None:
+            data = {
+                "id": obj.id,
+                "method": obj.method.value,
+                "params": [
+                    {
+                        "ns": obj.kwargs.get("namespace"),
+                        "db": obj.kwargs.get("database"),
+                        "ac": obj.kwargs.get("access"),
+                        # "variables": obj.kwargs.get("variables")
+                    }
+                ]
+            }
+            for key, value in obj.kwargs.get("variables", {}).items():
+                data["params"][0][key] = value
+
+        elif obj.kwargs.get("database") is not None and obj.kwargs.get("namespace") is not None and obj.kwargs.get("access") is None:
+            data = {
+                "id": obj.id,
+                "method": obj.method.value,
+                "params": [
+                    {
+                        "ns": obj.kwargs.get("namespace"),
+                        "db": obj.kwargs.get("database"),
+                        "user": obj.kwargs.get("username"),
+                        "pass": obj.kwargs.get("password")
+                    }
+                ]
+            }
+
+        else:
+            raise ValueError(f"Invalid data for signin: {obj.kwargs}")
         return encode(data)
 
     def prep_authenticate(self, obj) -> bytes:

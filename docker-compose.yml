@@ -6,7 +6,8 @@ services:
     environment:
       - SURREAL_USER=root
       - SURREAL_PASS=root
-      - SURREAL_LOG=trace
+      - SURREAL_INSECURE_FORWARD_ACCESS_ERRORS=true
+      - SURREAL_LOG=debug
     ports:
       - 8000:8000
 

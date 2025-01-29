@@ -66,7 +66,7 @@ class AsyncTemplate:
                 },
             })
         """
-        raise NotImplementedError(f"query not implemented for: {self}")
+        raise NotImplementedError(f"signup not implemented for: {self}")
 
     async def signin(self, vars: Dict) -> str:
         """Sign this connection in to a specific authentication scope.

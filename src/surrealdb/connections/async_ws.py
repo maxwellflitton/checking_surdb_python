@@ -69,6 +69,7 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
                 max_size=self.max_size,
                 subprotocols=[websockets.Subprotocol("cbor")]
             )
+        check = message.WS_CBOR_DESCRIPTOR
         await self.socket.send(message.WS_CBOR_DESCRIPTOR)
         response = decode(await self.socket.recv())
         self.check_response_for_error(response, process)
@@ -87,9 +88,10 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
             RequestMethod.SIGN_IN,
             username=vars.get("username"),
             password=vars.get("password"),
-            account=vars.get("account"),
+            access=vars.get("access"),
             database=vars.get("database"),
             namespace=vars.get("namespace"),
+            variables=vars.get("variables"),
         )
         response = await self._send(message, "signing in")
         self.check_response_for_result(response, "signing in")
@@ -120,12 +122,14 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
         )
         await self._send(message, "use")
 
-    async def info(self):
+    async def info(self) -> Optional[dict]:
         message = RequestMessage(
             self.id,
             RequestMethod.INFO
         )
-        return await self._send(message, "getting database information")
+        outcome = await self._send(message, "getting database information")
+        self.check_response_for_result(outcome, "getting database information")
+        return outcome["result"]
 
     async def version(self) -> str:
         message = RequestMessage(
@@ -337,3 +341,23 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
         response = await self._send(message, "upsert")
         self.check_response_for_result(response, "upsert")
         return response["result"]
+
+    async def __aenter__(self) -> "AsyncWsSurrealConnection":
+        """
+        Asynchronous context manager entry.
+        Initializes a websocket connection and returns the connection instance.
+        """
+        self.socket = await websockets.connect(
+            self.raw_url,
+            max_size=self.max_size,
+            subprotocols=[websockets.Subprotocol("cbor")]
+        )
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """
+        Asynchronous context manager exit.
+        Closes the websocket connection upon exiting the context.
+        """
+        if self.socket is not None:
+            await self.socket.close()
