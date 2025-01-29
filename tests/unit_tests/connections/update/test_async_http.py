@@ -8,7 +8,7 @@ from surrealdb.data.types.table import Table
 class TestAsyncHttpSurrealConnection(IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
-        self.url = "ws://localhost:8000"
+        self.url = "http://localhost:8000"
         self.password = "root"
         self.username = "root"
         self.vars_params = {
