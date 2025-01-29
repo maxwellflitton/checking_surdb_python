@@ -43,6 +43,7 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         self.id: str = str(uuid.uuid4())
         self.namespace: Optional[str] = None
         self.database: Optional[str] = None
+        self.vars = dict()
 
     async def _send(
         self,
@@ -139,6 +140,8 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
     async def query(self, query: str, params: Optional[dict] = None) -> dict:
         if params is None:
             params = {}
+        for key, value in self.vars.items():
+            params[key] = value
         message = RequestMessage(
             self.id,
             RequestMethod.QUERY,
@@ -219,13 +222,10 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         self.token = None
 
     async def let(self, key: str, value: Any) -> None:
-        message = RequestMessage(
-            self.id,
-            RequestMethod.LET,
-            key=key,
-            value=value
-        )
-        await self._send(message, "letting")
+        self.vars[key] = value
+
+    async def unset(self, key: str) -> None:
+        self.vars.pop(key)
 
     async def merge(
             self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None

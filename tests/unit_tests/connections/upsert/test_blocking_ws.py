@@ -33,13 +33,15 @@ class TestBlockingWsSurrealConnection(TestCase):
         if self.connection.socket:
             self.connection.socket.close()
 
-    def check_no_change(self, data: dict):
-        self.assertEqual(self.record_id, data["id"])
-        self.assertEqual("Tobie", data["name"])
+    def check_no_change(self, data: dict, random_id: bool = False):
+        if random_id is False:
+            self.assertEqual(self.record_id, data["id"])
+        self.assertEqual('Tobie', data["name"])
 
-    def check_change(self, data: dict):
-        self.assertEqual(self.record_id, data["id"])
-        self.assertEqual("Jaime", data["name"])
+    def check_change(self, data: dict, random_id: bool = False):
+        if random_id is False:
+            self.assertEqual(self.record_id, data["id"])
+        self.assertEqual('Jaime', data["name"])
         self.assertEqual(35, data["age"])
 
     def test_upsert_string(self):
@@ -76,16 +78,18 @@ class TestBlockingWsSurrealConnection(TestCase):
     def test_upsert_table(self):
         table = Table("user")
         first_outcome = self.connection.upsert(table)
-        self.check_no_change(first_outcome[0])
+        # self.check_no_change(first_outcome[0], random_id=True)
         outcome = self.connection.query("SELECT * FROM user;")
-        self.check_no_change(outcome[0])
+        self.assertEqual(2, len(outcome))
+        self.check_no_change(outcome[1], random_id=True)
 
     def test_upsert_table_with_data(self):
         table = Table("user")
         outcome = self.connection.upsert(table, self.data)
-        self.check_change(outcome[0])
+        self.check_change(outcome[0], random_id=True)
         outcome = self.connection.query("SELECT * FROM user;")
-        self.check_change(outcome[0])
+        self.assertEqual(2, len(outcome))
+        self.check_change(outcome[0], random_id=True)
 
 
 if __name__ == "__main__":

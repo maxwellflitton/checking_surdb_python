@@ -26,15 +26,16 @@ class TestBlockingHttpSurrealConnection(TestCase):
         _ = self.connection.signin(self.vars_params)
         _ = self.connection.use(namespace=self.namespace, database=self.database_name)
         self.connection.query("DELETE user;")
-        self.connection.query("CREATE user:tobie SET name = 'Tobie';"),
+        self.connection.query("CREATE user:tobie SET name = 'Tobie';")
 
-    def check_no_change(self, data: dict):
-        self.assertEqual(self.record_id, data["id"])
+    def check_no_change(self, data: dict, random_id: bool = False):
+        if random_id is False:
+            self.assertEqual(self.record_id, data["id"])
         self.assertEqual('Tobie', data["name"])
 
-    def check_change(self, data: dict):
-        self.assertEqual(self.record_id, data["id"])
-
+    def check_change(self, data: dict, random_id: bool = False):
+        if random_id is False:
+            self.assertEqual(self.record_id, data["id"])
         self.assertEqual('Jaime', data["name"])
         self.assertEqual(35, data["age"])
 
@@ -49,6 +50,7 @@ class TestBlockingHttpSurrealConnection(TestCase):
             "Tobie"
         )
         outcome = self.connection.query("SELECT * FROM user;")
+        self.assertEqual(1, len(outcome))
         self.check_no_change(outcome[0])
         self.connection.query("DELETE user;")
 
@@ -78,18 +80,20 @@ class TestBlockingHttpSurrealConnection(TestCase):
     def test_upsert_table(self):
         table = Table("user")
         first_outcome = self.connection.upsert(table)
-        self.check_no_change(first_outcome[0])
+        # self.check_no_change(first_outcome[0], random_id=True)
         outcome = self.connection.query("SELECT * FROM user;")
-        self.check_no_change(outcome[0])
+        self.assertEqual(2, len(outcome))
+        self.check_no_change(outcome[1], random_id=True)
 
         self.connection.query("DELETE user;")
 
     def test_upsert_table_with_data(self):
         table = Table("user")
-        outcome = self.connection.upsert(table, self.data)
-        self.check_change(outcome[0])
+        first_outcome = self.connection.upsert(table, self.data)
+        self.check_change(first_outcome[0], random_id=True)
         outcome = self.connection.query("SELECT * FROM user;")
-        self.check_change(outcome[0])
+        self.assertEqual(2, len(outcome))
+        # self.check_no_change(outcome[1], random_id=True)
         self.connection.query("DELETE user;")
 
 

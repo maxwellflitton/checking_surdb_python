@@ -28,13 +28,14 @@ class TestAsyncHttpSurrealConnection(IsolatedAsyncioTestCase):
         await self.connection.query("DELETE user;")
         await self.connection.query("CREATE user:tobie SET name = 'Tobie';"),
 
-    def check_no_change(self, data: dict):
-        self.assertEqual(self.record_id, data["id"])
+    def check_no_change(self, data: dict, random_id: bool = False):
+        if random_id is False:
+            self.assertEqual(self.record_id, data["id"])
         self.assertEqual('Tobie', data["name"])
 
-    def check_change(self, data: dict):
-        self.assertEqual(self.record_id, data["id"])
-
+    def check_change(self, data: dict, random_id: bool = False):
+        if random_id is False:
+            self.assertEqual(self.record_id, data["id"])
         self.assertEqual('Jaime', data["name"])
         self.assertEqual(35, data["age"])
 
@@ -78,18 +79,19 @@ class TestAsyncHttpSurrealConnection(IsolatedAsyncioTestCase):
     async def test_upsert_table(self):
         table = Table("user")
         first_outcome = await self.connection.upsert(table)
-        self.check_no_change(first_outcome[0])
         outcome = await self.connection.query("SELECT * FROM user;")
-        self.check_no_change(outcome[0])
+        self.assertEqual(2, len(outcome))
+        self.check_no_change(outcome[1], random_id=True)
 
         await self.connection.query("DELETE user;")
 
     async def test_upsert_table_with_data(self):
         table = Table("user")
         outcome = await self.connection.upsert(table, self.data)
-        self.check_change(outcome[0])
+        self.check_change(outcome[0], random_id=True)
         outcome = await self.connection.query("SELECT * FROM user;")
-        self.check_change(outcome[0])
+        self.assertEqual(2, len(outcome))
+        self.check_change(outcome[0], random_id=True)
         await self.connection.query("DELETE user;")
 
 

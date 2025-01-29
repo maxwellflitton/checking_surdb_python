@@ -24,6 +24,7 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
         self.id: str = str(uuid.uuid4())
         self.namespace: Optional[str] = None
         self.database: Optional[str] = None
+        self.vars = dict()
 
     def _send(self, message: RequestMessage, operation: str) -> Dict[str, Any]:
         data = message.WS_CBOR_DESCRIPTOR
@@ -93,6 +94,8 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
     def query(self, query: str, params: Optional[dict] = None) -> dict:
         if params is None:
             params = {}
+        for key, value in self.vars.items():
+            params[key] = value
         message = RequestMessage(
             self.id,
             RequestMethod.QUERY,
@@ -173,13 +176,10 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
         self.token = None
 
     def let(self, key: str, value: Any) -> None:
-        message = RequestMessage(
-            self.id,
-            RequestMethod.LET,
-            key=key,
-            value=value
-        )
-        self._send(message, "letting")
+        self.vars[key] = value
+
+    def unset(self, key: str) -> None:
+        self.vars.pop(key)
 
     def merge(
             self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None

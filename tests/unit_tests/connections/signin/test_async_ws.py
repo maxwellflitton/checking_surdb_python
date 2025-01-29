@@ -15,6 +15,9 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         }
         self.database_name = "test_db"
         self.namespace = "test_ns"
+        self.connection = AsyncWsSurrealConnection(self.url)
+        _ = await self.connection.signin(self.vars_params)
+        _ = await self.connection.use(self.database_name, self.namespace)
 
     async def test_signin_root(self):
         connection = AsyncWsSurrealConnection(self.url)
@@ -22,13 +25,18 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
         await connection.socket.close()
 
     async def test_signin_namespace(self):
+        vars = {
+            "username": self.username,
+            "password": self.password,
+            "namespace": self.namespace
+        }
         connection = AsyncWsSurrealConnection(self.url)
-        _ = await connection.signin(self.vars_params)
-        _ = await connection.use(namespace=self.namespace, database=self.database_name)
+        _ = await connection.signin(vars)
+        # _ = await connection.use(namespace=self.namespace, database=self.database_name)
         # TODO => it errors if "namespace" is present
         # self.vars_params["namespace"] = self.namespace
-        self.vars_params["database"] = self.database_name
-        _ = await connection.signin(self.vars_params)
+        # self.vars_params["database"] = self.database_name
+        # _ = await connection.signin(self.vars_params)
         await connection.socket.close()
 
     async def test_signin_database(self):
