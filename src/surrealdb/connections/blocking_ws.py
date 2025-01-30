@@ -236,6 +236,19 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         self.check_response_for_result(response, "insert")
         return response["result"]
 
+    def insert_relation(
+            self, table: Union[str, Table], data: Union[List[dict], dict]
+    ) -> Union[List[dict], dict]:
+        message = RequestMessage(
+            self.id,
+            RequestMethod.INSERT_RELATION,
+            table=table,
+            params=data
+        )
+        response = self._send(message, "insert_relation")
+        self.check_response_for_result(response, "insert_relation")
+        return response["result"]
+
     def merge(
             self, thing: Union[str, RecordID, Table], data: Optional[Dict] = None
     ) -> Union[List[dict], dict]:
