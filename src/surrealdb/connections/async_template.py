@@ -7,7 +7,7 @@ from surrealdb.data.types.table import Table
 
 class AsyncTemplate:
 
-    async def connect(self, url: str, options: Optional[Dict] = None) -> None:
+    async def connect(self, url: str) -> None:
         """Connects to a local or remote database endpoint.
 
         Args:
@@ -17,12 +17,6 @@ class AsyncTemplate:
         Example:
             # Connect to a remote endpoint
             await db.connect('https://cloud.surrealdb.com/rpc');
-
-            # Specify a namespace and database pair to use
-            await db.connect('https://cloud.surrealdb.com/rpc', {
-                namespace: 'surrealdb',
-                database: 'docs',
-            });
         """
         raise NotImplementedError(f"query not implemented for: {self}")
 

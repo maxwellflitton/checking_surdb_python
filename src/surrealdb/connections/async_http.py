@@ -28,39 +28,35 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
 
     def __init__(
         self,
-        url: str,
+        url: Optional[str] = None,
     ) -> None:
         """
         Constructor for the AsyncHttpSurrealConnection class.
 
         :param url: (str) The URL of the database to process queries for.
         """
-        self.url: Url = Url(url)
-        self.raw_url: str = self.url.raw_url
-        self.host: str = self.url.hostname
-        self.port: Optional[int] = self.url.port
+        self.url: Optional[Url] = Url(url) if url is not None else None
+        self.raw_url: Optional[str] = self.url.raw_url if url is not None else None
+        self.host: Optional[str] = self.url.hostname if url is not None else None
+        self.port: Optional[int] = self.url.port if url is not None else None
         self.token: Optional[str] = None
         self.id: str = str(uuid.uuid4())
         self.namespace: Optional[str] = None
         self.database: Optional[str] = None
         self.vars = dict()
 
+    def connect(self, url: str) -> None:
+        self.url = Url(url)
+        self.raw_url = self.url.raw_url
+        self.host = self.url.hostname
+        self.port = self.url.port
+
     async def _send(
         self,
         message: RequestMessage,
-        operation: str
+        operation: str,
+        bypass: bool = False,
     ) -> Dict[str, Any]:
-        """
-        Sends an HTTP request to the SurrealDB server.
-
-        :param endpoint: (str) The endpoint of the SurrealDB API to send the request to.
-        :param method: (str) The HTTP method (e.g., "POST", "GET", "PUT", "DELETE").
-        :param headers: (dict) Optional headers to include in the request.
-        :param payload: (dict) Optional JSON payload to include in the request body.
-
-        :return: (dict) The decoded JSON response from the server.
-        """
-        # json_body, method, endpoint = message.JSON_HTTP_DESCRIPTOR
         data = message.WS_CBOR_DESCRIPTOR
         url = f"{self.url.raw_url}/rpc"
         headers = dict()
@@ -85,7 +81,8 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
                 response.raise_for_status()
                 raw_cbor = await response.read()
                 data = decode(raw_cbor)
-                self.check_response_for_error(data, operation)
+                if bypass is False:
+                    self.check_response_for_error(data, operation)
                 return data
 
     def set_token(self, token: str) -> None:
@@ -139,6 +136,20 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         response = await self._send(message, "query")
         self.check_response_for_result(response, "query")
         return response["result"][0]["result"]
+
+    async def query_raw(self, query: str, params: Optional[dict] = None) -> dict:
+        if params is None:
+            params = {}
+        for key, value in self.vars.items():
+            params[key] = value
+        message = RequestMessage(
+            self.id,
+            RequestMethod.QUERY,
+            query=query,
+            params=params,
+        )
+        response = await self._send(message, "query", bypass=True)
+        return response
 
     async def create(
             self,

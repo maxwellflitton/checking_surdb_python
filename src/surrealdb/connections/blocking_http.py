@@ -15,18 +15,24 @@ from surrealdb.request_message.methods import RequestMethod
 
 class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
 
-    def __init__(self, url: str) -> None:
-        self.url: Url = Url(url)
-        self.raw_url: str = url.rstrip("/")
-        self.host: str = self.url.hostname
-        self.port: Optional[int] = self.url.port
+    def __init__(self, url: Optional[str] = None) -> None:
+        self.url: Optional[Url] = Url(url) if url is not None else None
+        self.raw_url: Optional[str] = self.url.raw_url if url is not None else None
+        self.host: Optional[str] = self.url.hostname if url is not None else None
+        self.port: Optional[int] = self.url.port if url is not None else None
         self.token: Optional[str] = None
         self.id: str = str(uuid.uuid4())
         self.namespace: Optional[str] = None
         self.database: Optional[str] = None
         self.vars = dict()
 
-    def _send(self, message: RequestMessage, operation: str) -> Dict[str, Any]:
+    def connect(self, url: str) -> None:
+        self.url = Url(url)
+        self.raw_url = self.url.raw_url
+        self.host = self.url.hostname
+        self.port = self.url.port
+
+    def _send(self, message: RequestMessage, operation: str, bypass: bool = False) -> Dict[str, Any]:
         data = message.WS_CBOR_DESCRIPTOR
         url = f"{self.url.raw_url}/rpc"
         headers = {
@@ -44,7 +50,8 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
         response.raise_for_status()
         raw_cbor = response.content
         data = decode(raw_cbor)
-        self.check_response_for_error(data, operation)
+        if bypass is False:
+            self.check_response_for_error(data, operation)
         return data
 
     def set_token(self, token: str) -> None:
@@ -93,6 +100,20 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
         response = self._send(message, "query")
         self.check_response_for_result(response, "query")
         return response["result"][0]["result"]
+
+    def query_raw(self, query: str, params: Optional[dict] = None) -> dict:
+        if params is None:
+            params = {}
+        for key, value in self.vars.items():
+            params[key] = value
+        message = RequestMessage(
+            self.id,
+            RequestMethod.QUERY,
+            query=query,
+            params=params,
+        )
+        response = self._send(message, "query", bypass=True)
+        return response
 
     def create(
             self,

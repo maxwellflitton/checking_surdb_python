@@ -5,6 +5,14 @@ from surrealdb.connections.blocking_ws import BlockingWsSurrealConnection
 from surrealdb.connections.url import Url, UrlScheme
 from typing import Union
 
+from surrealdb.data.types.table import Table
+from surrealdb.data.types.constants import *
+from surrealdb.data.types.datetime import DateTimeCompact
+from surrealdb.data.types.duration import Duration
+from surrealdb.data.types.future import Future
+from surrealdb.data.types.geometry import Geometry
+from surrealdb.data.types.range import Range
+from surrealdb.data.types.record_id import RecordID
 
 class AsyncSurrealDBMeta(type):
 

@@ -38,35 +38,30 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
     """
     def __init__(
             self,
-            url: str,
+            url: Optional[str] = None,
             max_size: int = 2 ** 20,
     ) -> None:
         """
         The constructor for the AsyncSurrealConnection class.
 
-        :param host: (str) the url of the database to process queries for
-        :param port: (int) the port that the database is listening on
-        :param user: (str) the username to login on
-        :param password: (str) the password to login on
-        :param namespace: (str) the namespace that the connection will stick to
-        :param database: (str) The database that the connection will stick to
-        :param max_size: (int) The maximum size of the connection
-        :param encrypted: (bool) Whether the connection is encrypted
+        :param url: The URL of the database to process queries for.
+        :param max_size: The maximum size of the connection.
         """
-        self.url: Url = Url(url)
-        self.raw_url: str = f"{self.url.raw_url}/rpc"
-        self.host: str = self.url.hostname
-        self.port: int = self.url.port
+        self.url: Optional[Url] = Url(url) if url is not None else None
+        self.raw_url: Optional[str] = f"{self.url.raw_url}/rpc" if url is not None else None
+        self.host: Optional[str] = self.url.hostname if url is not None else None
+        self.port: Optional[int] = self.url.port if url is not None else None
         self.max_size: int = max_size
         self.id: str = str(uuid.uuid4())
         self.token: Optional[str] = None
         self.socket = None
 
-    async def _send(self, message: RequestMessage, process: str) -> dict:
+    async def _send(self, message: RequestMessage, process: str, bypass: bool = False) -> dict:
         await self.connect()
         await self.socket.send(message.WS_CBOR_DESCRIPTOR)
         response = decode(await self.socket.recv())
-        self.check_response_for_error(response, process)
+        if bypass is False:
+            self.check_response_for_error(response, process)
         return response
 
     async def connect(self, url: Optional[str] = None, max_size: Optional[int] = None) -> None:
@@ -117,6 +112,18 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
         response = await self._send(message, "query")
         self.check_response_for_result(response, "query")
         return response["result"][0]["result"]
+
+    async def query_raw(self, query: str, params: Optional[dict] = None) -> dict:
+        if params is None:
+            params = {}
+        message = RequestMessage(
+            self.id,
+            RequestMethod.QUERY,
+            query=query,
+            params=params,
+        )
+        response = await self._send(message, "query", bypass=True)
+        return response
 
     async def use(self, namespace: str, database: str) -> None:
         message = RequestMessage(

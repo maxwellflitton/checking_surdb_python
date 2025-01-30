@@ -36,23 +36,39 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         id: The ID of the connection.
     """
 
-    def __init__(self, url: str, max_size: int = 2 ** 20) -> None:
+    def __init__(self, url: Optional[str] = None, max_size: int = 2 ** 20) -> None:
         """
         The constructor for the BlockingWsSurrealConnection class.
 
         :param url: (str) the URL of the database to process queries for.
         :param max_size: (int) The maximum size of the connection.
         """
-        self.url: Url = Url(url)
-        self.raw_url: str = f"{self.url.raw_url}/rpc"
-        self.host: str = self.url.hostname
-        self.port: int = self.url.port
+        self.url: Optional[Url] = Url(url) if url is not None else None
+        self.raw_url: Optional[str] = f"{self.url.raw_url}/rpc" if url is not None else None
+        self.host: Optional[str] = self.url.hostname if url is not None else None
+        self.port: Optional[int] = self.url.port if url is not None else None
         self.max_size: int = max_size
         self.id: str = str(uuid.uuid4())
         self.token: Optional[str] = None
         self.socket = None
 
-    def _send(self, message: RequestMessage, process: str) -> dict:
+    def connect(self, url: Optional[str] = None, max_size: Optional[int] = None) -> None:
+        # overwrite params if passed in
+        if url is not None:
+            self.url = Url(url)
+            self.raw_url: str = f"{self.url.raw_url}/rpc"
+            self.host: str = self.url.hostname
+            self.port: int = self.url.port
+        if max_size is not None:
+            self.max_size = max_size
+        if self.socket is None:
+            self.socket = ws_sync.connect(
+                self.raw_url,
+                max_size=self.max_size,
+                subprotocols=[websockets.Subprotocol("cbor")]
+            )
+
+    def _send(self, message: RequestMessage, process: str, bypass: bool = False) -> dict:
         if self.socket is None:
             self.socket = ws_sync.connect(
                 self.raw_url,
@@ -61,7 +77,8 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
             )
         self.socket.send(message.WS_CBOR_DESCRIPTOR)
         response = decode(self.socket.recv())
-        self.check_response_for_error(response, process)
+        if bypass is False:
+            self.check_response_for_error(response, process)
         return response
 
     def signin(self, vars: Dict[str, Any]) -> str:
@@ -94,6 +111,18 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         response = self._send(message, "query")
         self.check_response_for_result(response, "query")
         return response["result"][0]["result"]
+
+    def query_raw(self, query: str, params: Optional[dict] = None) -> dict:
+        if params is None:
+            params = {}
+        message = RequestMessage(
+            self.id,
+            RequestMethod.QUERY,
+            query=query,
+            params=params,
+        )
+        response = self._send(message, "query", bypass=True)
+        return response
 
     def use(self, namespace: str, database: str) -> None:
         message = RequestMessage(
