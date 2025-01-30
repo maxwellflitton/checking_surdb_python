@@ -38,7 +38,7 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
     """
     def __init__(
             self,
-            url: Optional[str] = None,
+            url: str,
             max_size: int = 2 ** 20,
     ) -> None:
         """
@@ -47,10 +47,10 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
         :param url: The URL of the database to process queries for.
         :param max_size: The maximum size of the connection.
         """
-        self.url: Optional[Url] = Url(url) if url is not None else None
-        self.raw_url: Optional[str] = f"{self.url.raw_url}/rpc" if url is not None else None
-        self.host: Optional[str] = self.url.hostname if url is not None else None
-        self.port: Optional[int] = self.url.port if url is not None else None
+        self.url: Url = Url(url)
+        self.raw_url: str = f"{self.url.raw_url}/rpc"
+        self.host: str = self.url.hostname
+        self.port: int = self.url.port
         self.max_size: int = max_size
         self.id: str = str(uuid.uuid4())
         self.token: Optional[str] = None

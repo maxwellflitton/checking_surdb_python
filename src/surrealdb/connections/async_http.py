@@ -28,28 +28,22 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
 
     def __init__(
         self,
-        url: Optional[str] = None,
+        url: str,
     ) -> None:
         """
         Constructor for the AsyncHttpSurrealConnection class.
 
         :param url: (str) The URL of the database to process queries for.
         """
-        self.url: Optional[Url] = Url(url) if url is not None else None
-        self.raw_url: Optional[str] = self.url.raw_url if url is not None else None
-        self.host: Optional[str] = self.url.hostname if url is not None else None
-        self.port: Optional[int] = self.url.port if url is not None else None
+        self.url: Url = Url(url)
+        self.raw_url: str = self.url.raw_url
+        self.host: str = self.url.hostname
+        self.port: Optional[int] = self.url.port
         self.token: Optional[str] = None
         self.id: str = str(uuid.uuid4())
         self.namespace: Optional[str] = None
         self.database: Optional[str] = None
         self.vars = dict()
-
-    def connect(self, url: str) -> None:
-        self.url = Url(url)
-        self.raw_url = self.url.raw_url
-        self.host = self.url.hostname
-        self.port = self.url.port
 
     async def _send(
         self,
@@ -57,6 +51,17 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         operation: str,
         bypass: bool = False,
     ) -> Dict[str, Any]:
+        """
+        Sends an HTTP request to the SurrealDB server.
+
+        :param endpoint: (str) The endpoint of the SurrealDB API to send the request to.
+        :param method: (str) The HTTP method (e.g., "POST", "GET", "PUT", "DELETE").
+        :param headers: (dict) Optional headers to include in the request.
+        :param payload: (dict) Optional JSON payload to include in the request body.
+
+        :return: (dict) The decoded JSON response from the server.
+        """
+        # json_body, method, endpoint = message.JSON_HTTP_DESCRIPTOR
         data = message.WS_CBOR_DESCRIPTOR
         url = f"{self.url.raw_url}/rpc"
         headers = dict()

@@ -15,22 +15,16 @@ from surrealdb.request_message.methods import RequestMethod
 
 class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
 
-    def __init__(self, url: Optional[str] = None) -> None:
-        self.url: Optional[Url] = Url(url) if url is not None else None
-        self.raw_url: Optional[str] = self.url.raw_url if url is not None else None
-        self.host: Optional[str] = self.url.hostname if url is not None else None
-        self.port: Optional[int] = self.url.port if url is not None else None
+    def __init__(self, url: str) -> None:
+        self.url: Url = Url(url)
+        self.raw_url: str = url.rstrip("/")
+        self.host: str = self.url.hostname
+        self.port: Optional[int] = self.url.port
         self.token: Optional[str] = None
         self.id: str = str(uuid.uuid4())
         self.namespace: Optional[str] = None
         self.database: Optional[str] = None
         self.vars = dict()
-
-    def connect(self, url: str) -> None:
-        self.url = Url(url)
-        self.raw_url = self.url.raw_url
-        self.host = self.url.hostname
-        self.port = self.url.port
 
     def _send(self, message: RequestMessage, operation: str, bypass: bool = False) -> Dict[str, Any]:
         data = message.WS_CBOR_DESCRIPTOR

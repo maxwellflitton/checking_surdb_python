@@ -36,37 +36,21 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         id: The ID of the connection.
     """
 
-    def __init__(self, url: Optional[str] = None, max_size: int = 2 ** 20) -> None:
+    def __init__(self, url: str, max_size: int = 2 ** 20) -> None:
         """
         The constructor for the BlockingWsSurrealConnection class.
 
         :param url: (str) the URL of the database to process queries for.
         :param max_size: (int) The maximum size of the connection.
         """
-        self.url: Optional[Url] = Url(url) if url is not None else None
-        self.raw_url: Optional[str] = f"{self.url.raw_url}/rpc" if url is not None else None
-        self.host: Optional[str] = self.url.hostname if url is not None else None
-        self.port: Optional[int] = self.url.port if url is not None else None
+        self.url: Url = Url(url)
+        self.raw_url: str = f"{self.url.raw_url}/rpc"
+        self.host: str = self.url.hostname
+        self.port: int = self.url.port
         self.max_size: int = max_size
         self.id: str = str(uuid.uuid4())
         self.token: Optional[str] = None
         self.socket = None
-
-    def connect(self, url: Optional[str] = None, max_size: Optional[int] = None) -> None:
-        # overwrite params if passed in
-        if url is not None:
-            self.url = Url(url)
-            self.raw_url: str = f"{self.url.raw_url}/rpc"
-            self.host: str = self.url.hostname
-            self.port: int = self.url.port
-        if max_size is not None:
-            self.max_size = max_size
-        if self.socket is None:
-            self.socket = ws_sync.connect(
-                self.raw_url,
-                max_size=self.max_size,
-                subprotocols=[websockets.Subprotocol("cbor")]
-            )
 
     def _send(self, message: RequestMessage, process: str, bypass: bool = False) -> dict:
         if self.socket is None:
