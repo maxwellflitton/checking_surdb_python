@@ -78,11 +78,6 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
     # async def signup(self, vars: Dict[str, Any]) -> str:
 
     async def signin(self, vars: Dict[str, Any]) -> str:
-        """
-        Signs in to the SurrealDB instance.
-
-        :return: None
-        """
         message = RequestMessage(
             self.id,
             RequestMethod.SIGN_IN,

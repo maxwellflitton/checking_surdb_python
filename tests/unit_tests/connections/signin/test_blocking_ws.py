@@ -1,7 +1,6 @@
 from unittest import main, TestCase
 
 from surrealdb.connections.blocking_ws import BlockingWsSurrealConnection
-from surrealdb import SurrealDB
 
 
 class TestAsyncHttpSurrealConnection(TestCase):
@@ -16,7 +15,7 @@ class TestAsyncHttpSurrealConnection(TestCase):
             "username": self.username,
             "password": self.password,
         }
-        self.connection = SurrealDB(self.url)
+        self.connection = BlockingWsSurrealConnection(self.url)
         _ = self.connection.signin(self.vars_params)
         _ = self.connection.use(namespace=self.namespace, database=self.database_name)
         _ = self.connection.query("DELETE user;")

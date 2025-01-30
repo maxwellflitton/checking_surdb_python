@@ -65,9 +65,6 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         return response
 
     def signin(self, vars: Dict[str, Any]) -> str:
-        """
-        Signs in to the SurrealDB instance.
-        """
         message = RequestMessage(
             self.id,
             RequestMethod.SIGN_IN,

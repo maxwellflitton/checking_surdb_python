@@ -97,19 +97,6 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         self.token = token
 
     async def signin(self, vars: dict) -> dict:
-        """
-        Signs in to the SurrealDB instance using the provided credentials and parameters.
-
-        :param kwargs: (dict) A dictionary containing any combination of:
-            - username: (str) The username for authentication.
-            - password: (str) The password for authentication.
-            - namespace: (str) The namespace name.
-            - database: (str) The database name.
-            - access: (str) Access level (e.g., "user").
-            - scope: (str) The scope definition (e.g., "user").
-            - variables: (dict) Additional properties required by the access or scope definition.
-        :return: (dict) The server's response to the sign-in request.
-        """
         message = RequestMessage(
             self.id,
             RequestMethod.SIGN_IN,
