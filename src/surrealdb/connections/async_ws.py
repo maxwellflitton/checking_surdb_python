@@ -53,8 +53,8 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
         :param max_size: (int) The maximum size of the connection
         :param encrypted: (bool) Whether the connection is encrypted
         """
-        self.raw_url: str = f"{url}/rpc"
         self.url: Url = Url(url)
+        self.raw_url: str = f"{self.url.raw_url}/rpc"
         self.host: str = self.url.hostname
         self.port: int = self.url.port
         self.max_size: int = max_size
@@ -341,6 +341,9 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
         response = await self._send(message, "upsert")
         self.check_response_for_result(response, "upsert")
         return response["result"]
+
+    def close(self):
+        self.socket.close()
 
     async def __aenter__(self) -> "AsyncWsSurrealConnection":
         """

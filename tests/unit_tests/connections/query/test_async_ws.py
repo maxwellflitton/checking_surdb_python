@@ -8,7 +8,7 @@ class TestAsyncWsSurrealConnection(IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
         self.queries = ["DELETE user;"]
-        self.url = "ws://localhost:8000"
+        self.url = "ws://localhost:8000/rpc"
         self.password = "root"
         self.username = "root"
         self.vars_params = {

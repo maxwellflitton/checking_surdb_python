@@ -16,8 +16,8 @@ from surrealdb.request_message.methods import RequestMethod
 class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
 
     def __init__(self, url: str) -> None:
-        self.raw_url: str = url.rstrip("/")
         self.url: Url = Url(url)
+        self.raw_url: str = url.rstrip("/")
         self.host: str = self.url.hostname
         self.port: Optional[int] = self.url.port
         self.token: Optional[str] = None
@@ -28,7 +28,7 @@ class BlockingHttpSurrealConnection(SyncTemplate, UtilsMixin):
 
     def _send(self, message: RequestMessage, operation: str) -> Dict[str, Any]:
         data = message.WS_CBOR_DESCRIPTOR
-        url = f"{self.raw_url}/rpc"
+        url = f"{self.url.raw_url}/rpc"
         headers = {
             "Accept": "application/cbor",
             "Content-Type": "application/cbor",

@@ -35,8 +35,8 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
 
         :param url: (str) The URL of the database to process queries for.
         """
-        self.raw_url: str = url.rstrip("/")
         self.url: Url = Url(url)
+        self.raw_url: str = self.url.raw_url
         self.host: str = self.url.hostname
         self.port: Optional[int] = self.url.port
         self.token: Optional[str] = None
@@ -62,7 +62,7 @@ class AsyncHttpSurrealConnection(AsyncTemplate, UtilsMixin):
         """
         # json_body, method, endpoint = message.JSON_HTTP_DESCRIPTOR
         data = message.WS_CBOR_DESCRIPTOR
-        url = f"{self.raw_url}/rpc"
+        url = f"{self.url.raw_url}/rpc"
         headers = dict()
         headers["Accept"] = "application/cbor"
         headers["content-type"] = "application/cbor"

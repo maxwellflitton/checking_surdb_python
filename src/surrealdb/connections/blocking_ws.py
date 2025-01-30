@@ -43,8 +43,8 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         :param url: (str) the URL of the database to process queries for.
         :param max_size: (int) The maximum size of the connection.
         """
-        self.raw_url: str = f"{url}/rpc"
         self.url: Url = Url(url)
+        self.raw_url: str = f"{self.url.raw_url}/rpc"
         self.host: str = self.url.hostname
         self.port: int = self.url.port
         self.max_size: int = max_size
@@ -318,6 +318,9 @@ class BlockingWsSurrealConnection(SyncTemplate, UtilsMixin):
         response = self._send(message, "signup")
         self.check_response_for_result(response, "signup")
         return response["result"]
+
+    def close(self):
+        self.socket.close()
 
     def __enter__(self) -> "BlockingWsSurrealConnection":
         """
