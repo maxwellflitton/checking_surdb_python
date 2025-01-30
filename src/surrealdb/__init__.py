@@ -57,7 +57,7 @@ class BlockingSurrealDBMeta(type):
         else:
             raise ValueError(f"Unsupported protocol in URL: {url}. Use 'ws://' or 'http://'.")
 
-def SurrealDB(url: str, max_size: int = 2 ** 20) -> Union[BlockingWsSurrealConnection, BlockingHttpSurrealConnection]:
+def Surreal(url: str, max_size: int = 2 ** 20) -> Union[BlockingWsSurrealConnection, BlockingHttpSurrealConnection]:
     constructed_url = Url(url)
     if constructed_url.scheme == UrlScheme.HTTP or constructed_url.scheme == UrlScheme.HTTPS:
         return BlockingHttpSurrealConnection(url=url)
@@ -67,7 +67,7 @@ def SurrealDB(url: str, max_size: int = 2 ** 20) -> Union[BlockingWsSurrealConne
         raise ValueError(f"Unsupported protocol in URL: {url}. Use 'ws://' or 'http://'.")
 
 
-def AsyncSurrealDB(url: str, max_size: int = 2 ** 20) -> Union[AsyncWsSurrealConnection, AsyncHttpSurrealConnection]:
+def AsyncSurreal(url: str, max_size: int = 2 ** 20) -> Union[AsyncWsSurrealConnection, AsyncHttpSurrealConnection]:
     constructed_url = Url(url)
     if constructed_url.scheme == UrlScheme.HTTP or constructed_url.scheme == UrlScheme.HTTPS:
         return AsyncHttpSurrealConnection(url=url)

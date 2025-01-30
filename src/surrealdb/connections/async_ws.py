@@ -63,17 +63,27 @@ class AsyncWsSurrealConnection(AsyncTemplate, UtilsMixin):
         self.socket = None
 
     async def _send(self, message: RequestMessage, process: str) -> dict:
+        await self.connect()
+        await self.socket.send(message.WS_CBOR_DESCRIPTOR)
+        response = decode(await self.socket.recv())
+        self.check_response_for_error(response, process)
+        return response
+
+    async def connect(self, url: Optional[str] = None, max_size: Optional[int] = None) -> None:
+        # overwrite params if passed in
+        if url is not None:
+            self.url = Url(url)
+            self.raw_url: str = f"{self.url.raw_url}/rpc"
+            self.host: str = self.url.hostname
+            self.port: int = self.url.port
+        if max_size is not None:
+            self.max_size = max_size
         if self.socket is None:
             self.socket = await websockets.connect(
                 self.raw_url,
                 max_size=self.max_size,
                 subprotocols=[websockets.Subprotocol("cbor")]
             )
-        check = message.WS_CBOR_DESCRIPTOR
-        await self.socket.send(message.WS_CBOR_DESCRIPTOR)
-        response = decode(await self.socket.recv())
-        self.check_response_for_error(response, process)
-        return response
 
     # async def signup(self, vars: Dict[str, Any]) -> str:
 
