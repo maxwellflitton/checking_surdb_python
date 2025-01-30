@@ -16,13 +16,10 @@ from surrealdb.data.types.geometry import (
 from surrealdb.data.types.range import BoundIncluded, BoundExcluded, Range
 from surrealdb.data.types.record_id import RecordID
 from surrealdb.data.types.table import Table
-from datetime import datetime
 
 
 @cbor2.shareable_encoder
 def default_encoder(encoder, obj):
-    if isinstance(obj, datetime):
-        obj = DateTimeCompact(int(obj.timestamp()))
 
     if isinstance(obj, GeometryPoint):
         tagged = cbor2.CBORTag(constants.TAG_GEOMETRY_POINT, obj.get_coordinates())
