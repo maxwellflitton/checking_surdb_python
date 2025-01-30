@@ -4,5 +4,5 @@ a repo to check the surrealdb python client
 below is the link to the JavaScript client:
 
 ```
-https://surrealdb.com/docs/sdk/javascript/methods/let
+pip install git+https://github.com/maxwellflitton/checking_surdb_python.git
 ```

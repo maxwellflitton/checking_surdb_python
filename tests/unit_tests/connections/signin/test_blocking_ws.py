@@ -45,7 +45,7 @@ class TestAsyncHttpSurrealConnection(TestCase):
         connection = BlockingWsSurrealConnection(self.url)
         _ = connection.signin(self.vars_params)
         self.connection.socket.close()
-        connection.socket.close()
+        connection.close()
 
     def test_signin_namespace(self):
         connection = BlockingWsSurrealConnection(self.url)
